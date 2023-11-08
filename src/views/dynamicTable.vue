@@ -1,18 +1,6 @@
-<template>
-  <div class="hello">
-    <el-button type="primary" @click="addAssets">添加食材</el-button>
-    <el-button type="success" @click="addProd">添加产品</el-button>
-    <dynamicTable></dynamicTable>
-  </div>
-</template>
-
 <script>
-import dynamicTable from './dynamicTable.vue'
 export default {
-  name: "HelloWorld",
-  components: {
-    dynamicTable
-  },
+  name: "dynamicTable",
   data() {
     return {
       tableData: [
@@ -51,23 +39,43 @@ export default {
       immediate: true,
     },
   },
-  computed: {
-    currentName() {
-      return this.$route.params.id;
-    },
-    cacheData() {
-      let key = this.$route.params.id;
-      let data = localStorage.getItem(key);
-      return data;
-    },
+  render() {
+    return (
+      <el-table data={this.tableData3} style="width: 100%">
+        <el-table-column prop="date" label="日期" width="150"></el-table-column>
+        <el-table-column label="配送信息">
+          <el-table-column
+            prop="name"
+            label="姓名"
+            width="120"
+          ></el-table-column>
+          <el-table-column label="地址">
+            <el-table-column
+              prop="province"
+              label="省份"
+              width="120"
+            ></el-table-column>
+            <el-table-column
+              prop="city"
+              label="市区"
+              width="120"
+            ></el-table-column>
+            <el-table-column
+              prop="address"
+              label="地址"
+              width="300"
+            ></el-table-column>
+            <el-table-column
+              prop="zip"
+              label="邮编"
+              width="120"
+            ></el-table-column>
+          </el-table-column>
+        </el-table-column>
+      </el-table>
+    );
   },
-  props: {
-    msg: String,
-  },
-  methods: {
-    addAssets() {},
-    addProd() {},
-  },
+  methods: {},
   mounted() {},
 };
 </script>
