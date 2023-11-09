@@ -1,21 +1,27 @@
 <template>
   <div class="hello">
+    <div class="all-card-boxs" v-for="(cols, index) in menu" :key="index">
+      <p class="p-title">{{ cols[0].split("/")[0] }}</p>
+      <div class="card-box">
+        <shicai
+          :name="name.split('/')[1]"
+          v-for="name in cols"
+          :key="name"
+          :selectOptions="selectOptions"
+        ></shicai>
+      </div>
+    </div>
     <el-button type="primary" @click="addAssets">添加食材</el-button>
     <el-button type="success" @click="addProd">添加产品</el-button>
-    <el-table :data="tableData3" style="width: 100%">
-      <el-table-column prop="date" label="日期" width="150"> </el-table-column>
+    <el-table :data="transData3" style="width: 100%">
       <el-table-column
-        :label="column.name"
-        v-for="column in columns"
-        :key="column.name"
+        :label="column"
+        v-for="(column, index) in transTitle"
+        :key="column + index"
       >
-        <el-table-column
-          prop="name"
-          :label="column2.name"
-          width="120"
-          v-for="column2 in column.children"
-          :key="column2.name"
-        ></el-table-column>
+        <template slot-scope="scope">
+          {{ scope.row[index] }}
+        </template>
       </el-table-column>
     </el-table>
   </div>
@@ -23,31 +29,91 @@
 
 <script>
 import moment from "moment";
+import shicai from "@/components/shicai.vue";
+
 export default {
   name: "HelloWorld",
+  components: {
+    shicai,
+  },
   data() {
     return {
+      selectOptions: [
+        {
+          value: "预处理",
+          label: "预处理",
+        },
+        {
+          value: "解冻",
+          label: "解冻",
+        },
+        {
+          value: "水果",
+          label: "水果",
+        },
+        {
+          value: "中种",
+          label: "中种",
+        },
+        {
+          value: "蔬菜*未处理",
+          label: "蔬菜*未处理",
+        },
+      ],
+      menu: [],
       weeks: [],
+      transData3: [],
       originData: [
         {
           type: "选择题",
           num: "5题",
           average: "3分/题",
-        },
-        {
-          type: "填空题",
-          num: "5题",
-          average: "3分/题",
+          average1: "3分/题",
+          average2: "3分/题",
+          average3: "3分/题",
+          average4: "3分/题",
+          average5: "3分/题",
+          average6: "3分/题",
+          average7: "3分/题",
         },
         {
           type: "选择题",
-          num: "2题",
-          average: "10分/题",
+          num: "5题",
+          average: "3分/题",
+          average1: "3分/题",
+          average2: "3分/题",
+          average3: "3分/题",
+          average4: "3分/题",
+          average5: "3分/题",
+          average6: "3分/题",
+          average7: "3分/题",
+        },
+        {
+          type: "选择题",
+          num: "5题",
+          average: "3分/题",
+          average1: "3分/题",
+          average2: "3分/题",
+          average3: "3分/题",
+          average4: "3分/题",
+          average5: "3分/题",
+          average6: "3分/题",
+          average7: "3分/题",
+        },
+        {
+          type: "选择题",
+          num: "5题",
+          average: "3分/题",
+          average1: "3分/题",
+          average2: "3分/题",
+          average3: "3分/题",
+          average4: "3分/题",
+          average5: "3分/题",
+          average6: "3分/题",
+          average7: "3分/题",
         },
       ],
-      originTitle: ["题型", "数量", "均分"], // originTitle 该标题为 正常显示的标题, 数组中的顺序就是上面数据源对象中的字段标题对应的顺序
-      transTitle: ["", "学生1", "学生2", "学生3"], // transTitle 该标题为转化后的标题, 注意多一列,  因为原来的标题变成了竖着显示了, 所以多一列标题, 第一个为空即可
-      transData: [],
+      originTitle: ["招牌咖喱酱", "番茄牛腩酱", "橙子煮红茶"], // originTitle 该标题为 正常显示的标题, 数组中的顺序就是上面数据源对象中的字段标题对应的顺序
       columns: [
         {
           name: "预处理",
@@ -144,28 +210,6 @@ export default {
           ],
         },
       ],
-      tableData3: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1517 弄",
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1519 弄",
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1516 弄",
-        },
-      ],
     };
   },
   watch: {
@@ -181,6 +225,9 @@ export default {
     },
   },
   computed: {
+    transTitle() {
+      return ["", ...this.weeks];
+    },
     currentName() {
       return this.$route.params.id;
     },
@@ -221,6 +268,11 @@ export default {
     },
   },
   mounted() {
+    // this.originTitle = []
+    this.menu = this.columns.map((col) => {
+      return col.children.map((item) => col.name + "/" + item.name);
+    });
+    this.originTitle = this.menu.flat();
     this.weeks = this.generateWeeks();
     let matrixData = this.originData.map((row) => {
       let arr = [];
@@ -231,7 +283,7 @@ export default {
     });
     console.log("matrixData = ", matrixData);
     // 加入标题拼接最终的数据
-    this.transData = matrixData[0].map((col, i) => {
+    this.transData3 = matrixData[0].map((col, i) => {
       return [
         this.originTitle[i],
         ...matrixData.map((row) => {
@@ -239,13 +291,27 @@ export default {
         }),
       ];
     });
-    console.log("this.transData = ", this.transData);
+    console.log("this.transData = ", this.transData3);
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+.all-card-boxs {
+  .p-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .card-box {
+    display: flex;
+    flex-wrap: wrap;
+    .food-card {
+      margin-right: 5px;
+    }
+  }
+}
 .test {
   color: red;
   .re {
