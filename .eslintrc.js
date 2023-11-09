@@ -4,9 +4,9 @@ module.exports = {
     node: true,
   },
   extends: [
-    "endOfLine",
     "plugin:vue/essential",
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:prettier/recommended",
   ],
   parserOptions: {
     parser: "@babel/eslint-parser",
@@ -14,5 +14,6 @@ module.exports = {
   rules: {
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
+    "linebreak-style": [0, "error", "windows"],
   },
 };
