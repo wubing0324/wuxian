@@ -26,14 +26,6 @@
             autocomplete="off"
           ></el-input>
         </div>
-        <div class="row-item">
-          <span>类型</span>
-          <div class="tag-box">
-            <el-tag size="mini" v-for="tag in selectOptions" :key="tag.value">{{
-              tag.value
-            }}</el-tag>
-          </div>
-        </div>
         <div class="bottom clearfix">
           <el-button type="text" class="button" @click="saveCard"
             >保存</el-button
@@ -63,7 +55,7 @@ export default {
     msg: String,
     name: {
       type: String,
-      default: () => "食材名称",
+      default: () => "",
     },
     type: {
       type: String,
@@ -82,18 +74,46 @@ export default {
         unit: "",
         type: "",
       },
+      colorList: ["#ecf5ff", "#f0f9eb", "#f4f4f5", "#fcf6eb", "#fef0f0"],
     };
   },
   methods: {
+    generateRandomColor() {
+      // 生成RGB颜色的随机值
+      var r = Math.floor(Math.random() * 256);
+      var g = Math.floor(Math.random() * 256);
+      var b = Math.floor(Math.random() * 256);
+
+      // 将RGB值转换为十六进制
+      var hexR = r.toString(16).padStart(2, "0");
+      var hexG = g.toString(16).padStart(2, "0");
+      var hexB = b.toString(16).padStart(2, "0");
+
+      // 返回生成的随机颜色
+      return "#" + hexR + hexG + hexB;
+    },
+    generateTagsColor() {
+      for (let i = 0; i < this.selectOptions.length; i++) {
+        this.colorList.push(this.generateRandomColor());
+      }
+    },
     saveCard() {
       console.log("保存");
+      this.edit = false;
     },
     deleteCard() {
       console.log("删除");
+      this.$emit("deleteData");
     },
     handleEdit() {
       this.edit = !this.edit;
     },
+  },
+  created() {
+    // this.generateTagsColor();
+    if (!this.name) {
+      this.edit = true;
+    }
   },
   mounted() {
     this.form.currentName = this.name;
@@ -144,6 +164,18 @@ export default {
     display: flex;
     span {
       font-size: 12px;
+    }
+    .tag-box {
+      display: flex;
+      flex-wrap: wrap;
+      .el-tag {
+        margin-right: 5px;
+        margin-top: 3px;
+        cursor: pointer;
+        &:hover {
+          color: #0d7ef2;
+        }
+      }
     }
   }
 }

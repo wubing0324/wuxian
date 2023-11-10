@@ -5,10 +5,15 @@
       <div class="card-box">
         <shicai
           :name="name.split('/')[1]"
-          v-for="name in cols"
-          :key="name"
+          v-for="(name, index) in cols"
+          :key="name || 'add'"
+          :index="index"
+          @deleteData="deleteData(cols, index)"
           :selectOptions="selectOptions"
         ></shicai>
+        <el-card class="add-card">
+          <i class="el-icon-plus" @click="addCard(cols, index)"></i>
+        </el-card>
       </div>
     </div>
     <el-button type="primary" @click="addAssets">添加食材</el-button>
@@ -113,7 +118,7 @@ export default {
           average7: "3分/题",
         },
       ],
-      originTitle: ["招牌咖喱酱", "番茄牛腩酱", "橙子煮红茶"], // originTitle 该标题为 正常显示的标题, 数组中的顺序就是上面数据源对象中的字段标题对应的顺序
+      originTitle: ["招牌咖喱酱", "番茄牛腩酱", "橙子煮红茶发财发财发财发财"], // originTitle 该标题为 正常显示的标题, 数组中的顺序就是上面数据源对象中的字段标题对应的顺序
       columns: [
         {
           name: "预处理",
@@ -125,7 +130,7 @@ export default {
               name: "番茄牛腩酱",
             },
             {
-              name: "橙子煮红茶",
+              name: "橙子煮红茶发财发财发财发财范德萨范德萨范德萨富士达富士达",
             },
             {
               name: "6分熟意面",
@@ -241,6 +246,14 @@ export default {
     msg: String,
   },
   methods: {
+    deleteData(data, index) {
+      data.splice(index, 1);
+    },
+    addCard(name, index) {
+      console.log("menus = ", this.menu);
+      console.log("menu = ", this.menu[index]);
+      this.menu[index].push("");
+    },
     addAssets() {},
     addProd() {},
     generateWeeks() {
@@ -310,6 +323,14 @@ export default {
     .food-card {
       margin-right: 5px;
     }
+  }
+  .add-card {
+    width: 268px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
 }
 .test {
