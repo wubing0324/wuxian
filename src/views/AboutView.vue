@@ -325,8 +325,8 @@ export default {
     }
   }
   .add-card {
-    width: 268px;
-    height: 280px;
+    width: 178px;
+    height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1,12 +1,12 @@
 <template>
   <div class="food-card">
     <el-card :body-style="{ padding: '0px' }" class="box-card">
-      <img
+      <!-- <img
         v-show="!edit"
         src="@/assets/hanbao.jpg"
         class="top-image"
         @click="handleEdit"
-      />
+      /> -->
       <div class="edit-box" v-show="edit">
         <div class="row-item">
           <span>名称</span>
@@ -37,10 +37,19 @@
       </div>
       <div v-show="!edit">
         <div class="bottom clearfix">
-          <span class="bottom-title">{{ form.currentName }}</span>
+          <span
+            class="bottom-title"
+            :class="{ 'small-size': form.currentName.length > 20 }"
+            >{{ form.currentName }}</span
+          >
+          {{ form.count }}
           <div class="desc">
-            <span>单位：{{ form.unit }}</span>
-            <span>类型：{{ form.type }}</span>
+            <el-input
+              size="mini"
+              v-model.number="form.count"
+              placeholder="请输入内容"
+            ></el-input>
+            <span>{{ form.unit }}</span>
           </div>
         </div>
       </div>
@@ -73,6 +82,7 @@ export default {
         currentName: "",
         unit: "",
         type: "",
+        count: "",
       },
       colorList: ["#ecf5ff", "#f0f9eb", "#f4f4f5", "#fcf6eb", "#fef0f0"],
     };
@@ -126,8 +136,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .food-card {
-  width: 268px;
-  height: 280px;
+  width: 178px;
+  height: 120px;
   font-size: 14px;
   position: relative;
   .edit-box {
@@ -154,6 +164,9 @@ export default {
   }
   .bottom-title {
     font-size: 16px;
+    &.small-size {
+      font-size: 12px;
+    }
   }
   .desc {
     display: flex;

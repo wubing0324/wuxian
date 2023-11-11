@@ -8,6 +8,15 @@ import "./utils/rem.js";
 Vue.use(ElementUI);
 Vue.config.productionTip = false;
 
+function getLocalData(key, typeData) {
+  let data = localStorage.getItem(key);
+  data = data ? JSON.parse(data) : typeData;
+  if (data.length === 0) {
+    localStorage.setItem(key, JSON.stringify(typeData));
+  }
+  return data;
+}
+Vue.prototype.getLocalData = getLocalData;
 new Vue({
   router,
   store,
