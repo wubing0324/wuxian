@@ -3,13 +3,27 @@
     <div class="card-box">
       <shicai
         class="shicai-card"
-        v-for="(item, index) in assetsData"
+        v-for="(item, index) in originData"
         :name="item.name"
         :key="item.type"
+        :unit="item.unit"
         :index="index"
         @deleteData="deleteData(item, index)"
       ></shicai>
     </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column
+        :label="column"
+        v-for="(column, index) in transTitle"
+        :key="column + index"
+      >
+        <el-table-column :label="getTitle(index)">
+          <template slot-scope="scope">
+            {{ scope.row[index] }}
+          </template>
+        </el-table-column>
+      </el-table-column>
+    </el-table>
     <!-- 食材弹窗 -->
     <el-dialog
       title="提示"
@@ -66,6 +80,7 @@
 // import moment from "moment";
 import shicai from "@/components/shicai.vue";
 import AssetType from "@/components/AssetType.vue";
+import moment from "moment";
 
 export default {
   name: "HelloWorld",
@@ -75,7 +90,11 @@ export default {
   },
   data() {
     return {
-      assetsData: [],
+      columns: [],
+      tableData: [],
+      weeks: [],
+      originData: [],
+      dealData: [],
       rules: {
         name: [{ required: true, message: "请输入名称", trigger: "blur" }],
         unit: [{ required: true, message: "请输入单位", trigger: "blur" }],
@@ -90,44 +109,113 @@ export default {
       dialogVisible: false,
     };
   },
-  watch: {
-    $route: {
-      handler: function (val) {
-        let key = val.params.id;
-        let data = localStorage.getItem(key);
-        if (!data) {
-          localStorage.setItem(key, JSON.stringify([]));
-        }
-      },
-      immediate: true,
-    },
-  },
-  computed: {
-    transTitle() {
-      return ["", ...this.weeks];
-    },
-    currentName() {
-      return this.$route.params.id;
-    },
-    cacheData() {
-      let key = this.$route.params.id;
-      let data = localStorage.getItem(key);
-      return data;
-    },
-  },
   props: {
     msg: String,
   },
+  computed: {
+    transTitle() {
+      return ["", "", ...this.weeks];
+    },
+  },
   methods: {
+    getTitle(index) {
+      let title = "入库/剩余";
+      if (index === 0) {
+        title = "品类";
+      } else if (index === 1) {
+        title = "食材名称";
+      } else {
+        title = "入库/剩余";
+      }
+      return title;
+    },
+    generateWeeks() {
+      let weeks = [];
+      let mapWeek = {
+        1: "周一",
+        2: "周二",
+        3: "周三",
+        4: "周四",
+        5: "周五",
+        6: "周六",
+        7: "周日",
+      };
+      var weekOfday = moment().format("E"); //计算今天是这周第几天
+      for (let i = 6; i >= 0; i--) {
+        weeks.push(
+          moment()
+            .add(weekOfday - 1 - i, "days")
+            .format("YYYY/MM/DD") +
+            "/" +
+            mapWeek[7 - i]
+        );
+      }
+      return weeks;
+    },
     resetForm(formName) {
       this.$refs[formName].resetFields();
       this.dialogVisible = false;
+    },
+    generateColumns() {
+      let data = [];
+      let columns = [];
+      data = new Set(this.originData.map((item) => item.type));
+      data = [...data];
+      columns = data.map((type) => {
+        return {
+          name: type,
+          children: this.originData
+            .filter((item) => item.type === type)
+            .map((data) => {
+              return {
+                name: `${data.name} (单位/${data.unit})`,
+              };
+            }),
+        };
+      });
+      this.columns = columns
+        .map((col) => {
+          return col.children.map((item) => [col.name, item.name]);
+        })
+        .flat();
+      console.log("columns = ", this.columns);
+    },
+    generateTable() {
+      let types = new Set(this.originData.map((item) => item.type));
+      types = [...types];
+      let columns = types.map((type) => {
+        return this.originData.filter((item) => item.type === type);
+      });
+      console.log("odata = ", columns);
+      let matrixData = columns.flat().map((row) => {
+        let arr = [];
+        for (let key in row) {
+          arr.push(row[key]);
+        }
+        return arr;
+      });
+      let dateValue = [
+        [12, 60],
+        [13, 61],
+        [13, 61],
+        [13, 61],
+        [13, 61],
+        [13, 61],
+        [13, 61],
+      ];
+      this.tableData = matrixData.map((col, i) => {
+        console.log([this.columns[i], ...col]);
+        return [
+          ...this.columns[i],
+          ...dateValue.map((item) => item[0] + "/" + item[1]),
+        ];
+      });
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           const { name, type } = this.form;
-          let result = this.assetsData.filter(
+          let result = this.originData.filter(
             (item) => item.name === name && item.type === type
           );
           if (result.length > 0) {
@@ -137,13 +225,15 @@ export default {
             });
             return;
           }
-          this.assetsData.push({
+          this.originData.push({
             name: this.form.name,
             type: this.form.type,
             unit: this.form.unit,
             count: 0,
           });
-          localStorage.setItem("assetsData", JSON.stringify(this.assetsData));
+          this.generateColumns();
+          this.generateTable();
+          localStorage.setItem("originData", JSON.stringify(this.originData));
           this.$message({
             message: `类型${this.form.name}保存成功`,
             type: "success",
@@ -187,8 +277,13 @@ export default {
   },
   mounted() {},
   created() {
-    this.assetsData = this.getLocalData("assetsData", []);
+    this.originData = this.getLocalData("originData", []);
+    if (this.originData.length > 0) {
+      this.generateColumns();
+      this.generateTable();
+    }
     this.assetTypeData = this.getLocalData("assetTypeData", []);
+    this.weeks = this.generateWeeks();
   },
 };
 </script>

@@ -70,6 +70,10 @@ export default {
       type: String,
       default: () => "其他",
     },
+    unit: {
+      type: String,
+      default: () => "ml",
+    },
     selectOptions: {
       type: Array,
       default: () => [],
@@ -128,7 +132,7 @@ export default {
   mounted() {
     this.form.currentName = this.name;
     this.form.type = this.type;
-    this.form.unit = "ml";
+    this.form.unit = this.unit;
   },
 };
 </script>
