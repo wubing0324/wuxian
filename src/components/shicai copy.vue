@@ -1,45 +1,30 @@
 <template>
   <div class="food-card">
     <el-card :body-style="{ padding: '0px' }" class="box-card">
+      <!-- <img
+        v-show="!edit"
+        src="@/assets/hanbao.jpg"
+        class="top-image"
+        @click="handleEdit"
+      /> -->
       <div class="edit-box" v-show="edit">
         <div class="row-item">
-          <span class="row-item-span">名称</span>
+          <span>名称</span>
           <el-input
             size="mini"
             type="age"
-            v-model="form.name"
+            v-model="form.currentName"
             autocomplete="off"
           ></el-input>
         </div>
         <div class="row-item">
-          <span class="row-item-span">数量</span>
-          <el-input
-            type="age"
-            size="mini"
-            v-model="form.count"
-            autocomplete="off"
-          ></el-input>
-        </div>
-        <div class="row-item">
-          <span class="row-item-span">单位</span>
+          <span>单位</span>
           <el-input
             type="age"
             size="mini"
             v-model="form.unit"
             autocomplete="off"
           ></el-input>
-        </div>
-        <div class="row-item">
-          <span class="row-item-span">类型</span>
-          <el-select v-model="form.type" placeholder="请选择" size="mini">
-            <el-option
-              v-for="item in assetTypeData"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
         </div>
         <div class="bottom clearfix">
           <el-button type="text" class="button" @click="saveCard"
@@ -48,6 +33,24 @@
           <el-button type="text" class="button" @click="deleteCard"
             >删除</el-button
           >
+        </div>
+      </div>
+      <div v-show="!edit">
+        <div class="bottom clearfix">
+          <span
+            class="bottom-title"
+            :class="{ 'small-size': form.currentName.length > 20 }"
+            >{{ form.currentName }}</span
+          >
+          {{ form.count }}
+          <div class="desc">
+            <el-input
+              size="mini"
+              v-model.number="form.count"
+              placeholder="请输入内容"
+            ></el-input>
+            <span>{{ form.unit }}</span>
+          </div>
         </div>
       </div>
     </el-card>
@@ -75,20 +78,12 @@ export default {
       type: Array,
       default: () => [],
     },
-    assetTypeData: {
-      type: Array,
-      default: () => [],
-    },
-    infoFromProps: {
-      type: Array,
-      default: () => {},
-    },
   },
   data() {
     return {
       edit: true,
       form: {
-        name: "",
+        currentName: "",
         unit: "",
         type: "",
         count: "",
@@ -124,6 +119,9 @@ export default {
       console.log("删除");
       this.$emit("deleteData");
     },
+    handleEdit() {
+      this.edit = !this.edit;
+    },
   },
   created() {
     // this.generateTagsColor();
@@ -132,7 +130,9 @@ export default {
     }
   },
   mounted() {
-    this.form = { ...this.infoFromProps };
+    this.form.currentName = this.name;
+    this.form.type = this.type;
+    this.form.unit = this.unit;
   },
 };
 </script>
@@ -140,34 +140,45 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .food-card {
-  width: 228px;
-  height: 220px;
+  width: 178px;
+  height: 120px;
   font-size: 14px;
   position: relative;
   .edit-box {
     position: relative;
-    padding: 40px 14px 14px 14px;
-    .card-delete {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      cursor: pointer;
-      font-size: 24px;
-    }
-    .row-item-span {
-      width: 50px;
-      text-align: left;
-    }
+    padding: 30px 14px 14px 14px;
   }
   .el-card {
     font-size: 14px;
     width: 100%;
     height: 100%;
   }
-  .row-item {
-    margin-bottom: 5px;
+  .el-form-item__label {
+    font-size: 12px;
+  }
+  .top-image {
+    width: 100%;
+  }
+  .el-icon-edit-box {
+    cursor: pointer;
+    position: absolute;
+    right: 12px;
+    top: 0;
+    font-size: 28px;
+  }
+  .bottom-title {
+    font-size: 16px;
+    &.small-size {
+      font-size: 12px;
+    }
+  }
+  .desc {
     display: flex;
-    align-items: center;
+    justify-content: space-between;
+    padding: 5px 15px;
+  }
+  .row-item {
+    display: flex;
     span {
       font-size: 12px;
     }

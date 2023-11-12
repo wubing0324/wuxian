@@ -48,8 +48,8 @@ export default {
       default: () => [],
     },
     date: {
-      type: Array,
-      default: () => [],
+      type: Object,
+      default: () => {},
     },
   },
   watch: {

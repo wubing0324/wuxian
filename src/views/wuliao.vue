@@ -4,12 +4,7 @@
     <div v-show="nodata">暂无数据，请先添加数据</div>
     <showTable :originData="originData" :date="date"></showTable>
     <!-- 食材弹窗 -->
-    <el-dialog
-      title="提示"
-      :visible.sync="dialogVisible"
-      width="30%"
-      :before-close="handleClose"
-    >
+    <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
       <el-form
         size="mini"
         :rules="rules"
@@ -33,7 +28,7 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="活动区域" prop="type">
-          <el-select v-model="form.type" placeholder="请选择活动区域">
+          <el-select v-model="form.type" placeholder="请选择">
             <el-option
               v-for="item in assetTypeData"
               :key="item.value"
@@ -49,14 +44,17 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <editTable ref="editTable" :originData="originData"></editTable>
     <AssetType ref="AssetType"></AssetType>
     <el-button type="primary" @click="addAssets">添加食材</el-button>
+    <el-button type="success" @click="editAssets">修改食材</el-button>
     <el-button type="success" @click="addAssetType">添加种类</el-button>
   </div>
 </template>
 
 <script>
 import showTable from "@/components/Material/showTable.vue";
+import editTable from "@/components/Material/editTable.vue";
 import AssetType from "@/components/AssetType.vue";
 import moment from "moment";
 
@@ -65,6 +63,7 @@ export default {
   components: {
     showTable,
     AssetType,
+    editTable,
   },
   data() {
     return {
@@ -103,15 +102,11 @@ export default {
   },
   props: {},
   methods: {
+    editAssets() {
+      this.$refs.editTable.showDialog();
+    },
     addAssetType() {
       this.$refs.AssetType.showDialog();
-    },
-    handleClose(done) {
-      this.$confirm("确认关闭？")
-        .then(() => {
-          done();
-        })
-        .catch(() => {});
     },
     deleteData(data, index) {
       data.splice(index, 1);
