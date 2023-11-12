@@ -10,11 +10,11 @@
       <el-form
         :model="form"
         ref="form"
-        label-width="100px"
+        label-width="200px"
         class="demo-ruleForm"
       >
         <el-form-item
-          label="年龄"
+          label="食材种类"
           prop="name"
           :rules="[{ required: true, message: '不能为空' }]"
         >
@@ -38,6 +38,7 @@ export default {
   name: "HelloWorld",
   data() {
     return {
+      currentData: {},
       assetTypeData: [],
       form: {
         name: "",
@@ -70,6 +71,15 @@ export default {
   props: {
     msg: String,
   },
+  watch: {
+    $route: {
+      handler: function (val) {
+        let key = val.params.id;
+        this.currentData = this.getLocalData(key, {});
+      },
+      immediate: true,
+    },
+  },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -86,10 +96,9 @@ export default {
             value: this.form.name,
             label: this.form.name,
           });
-          localStorage.setItem(
-            "assetTypeData",
-            JSON.stringify(this.assetTypeData)
-          );
+          let key = this.$route.params.id;
+          this.currentData.assetTypeData = this.assetTypeData;
+          localStorage.setItem(key, JSON.stringify(this.currentData));
           this.$message({
             message: `类型${this.form.name}保存成功`,
             type: "success",
@@ -114,9 +123,19 @@ export default {
     handleCloseType(done) {
       done();
     },
+    getCurrentData() {
+      let key = this.$route.params.id;
+      let currentData = this.getLocalData(key, {
+        originData: [],
+        date: {},
+        assetTypeData: [],
+      });
+      return currentData;
+    },
   },
   created() {
-    this.assetTypeData = this.getLocalData("assetTypeData", []);
+    this.currentData = this.getCurrentData();
+    this.assetTypeData = this.currentData.assetTypeData;
   },
   mounted() {},
 };

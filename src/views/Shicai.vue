@@ -11,19 +11,29 @@
         @deleteData="deleteData(item, index)"
       ></shicai>
     </div>
-    <el-table :data="tableData" style="width: 100%">
-      <el-table-column
-        :label="column"
-        v-for="(column, index) in transTitle"
-        :key="column + index"
-      >
-        <el-table-column :label="getTitle(index)">
-          <template slot-scope="scope">
-            {{ scope.row[index] }}
-          </template>
+    <div v-for="(data, ids) in tableData" :key="types[ids]">
+      <p class="table-type">{{ types[ids] }}</p>
+      <el-table :data="data" style="width: 100%">
+        <el-table-column
+          :label="column"
+          v-for="(column, index) in getTitle(ids)"
+          :key="column + index"
+        >
+          <el-table-column :label="getSubTitle(index, data[0].length)">
+            <template slot-scope="scope">
+              <div v-if="isArray(scope.row[index])">
+                <span class="ruku">{{ scope.row[index][0] }}</span>
+                /
+                <span class="shengyu">{{ scope.row[index][1] }}</span>
+              </div>
+              <div v-else>
+                {{ scope.row[index] }}
+              </div>
+            </template>
+          </el-table-column>
         </el-table-column>
-      </el-table-column>
-    </el-table>
+      </el-table>
+    </div>
     <!-- 食材弹窗 -->
     <el-dialog
       title="提示"
@@ -90,6 +100,7 @@ export default {
   },
   data() {
     return {
+      types: [],
       columns: [],
       tableData: [],
       weeks: [],
@@ -114,23 +125,14 @@ export default {
   },
   computed: {
     transTitle() {
-      return ["", "", ...this.weeks];
+      return ["", ...this.weeks, ""];
     },
   },
   methods: {
-    getTitle(index) {
-      let title = "入库/剩余";
-      if (index === 0) {
-        title = "品类";
-      } else if (index === 1) {
-        title = "食材名称";
-      } else {
-        title = "入库/剩余";
-      }
-      return title;
+    isArray(arr) {
+      return Object.prototype.toString.call(arr) === "[object Array]";
     },
-    generateWeeks() {
-      let weeks = [];
+    getTitle(index) {
       let mapWeek = {
         1: "周一",
         2: "周二",
@@ -140,15 +142,32 @@ export default {
         6: "周六",
         7: "周日",
       };
-      var weekOfday = moment().format("E"); //计算今天是这周第几天
-      for (let i = 6; i >= 0; i--) {
-        weeks.push(
-          moment()
-            .add(weekOfday - 1 - i, "days")
-            .format("YYYY/MM/DD") +
-            "/" +
-            mapWeek[7 - i]
-        );
+      let weeks = this.weeks.map(
+        (key, index) => key + "/" + mapWeek[index + 1]
+      );
+      return [this.types[index], ...weeks, ""];
+    },
+    getSubTitle(index, len) {
+      let title = "入库/剩余";
+      if (index === 0) {
+        title = "食材名称/规格";
+      } else if (index === len - 1) {
+        title = "总量";
+      } else {
+        title = "入库/剩余";
+      }
+
+      return title;
+    },
+    generateWeeks() {
+      let weeks = [];
+      let weekOfday = moment().format("E"); //计算今天是这周第几天
+      let last_monday = moment()
+        .startOf()
+        .subtract(weekOfday - 1, "days")
+        .format("YYYY/MM/DD"); //周一日期
+      for (let i = 0; i < 7; i++) {
+        weeks.push(moment(last_monday).add(i, "days").format("YYYY/MM/DD"));
       }
       return weeks;
     },
@@ -173,43 +192,149 @@ export default {
             }),
         };
       });
-      this.columns = columns
-        .map((col) => {
-          return col.children.map((item) => [col.name, item.name]);
-        })
-        .flat();
-      console.log("columns = ", this.columns);
+      console.log("columns = ", columns);
+      this.columns = columns;
+      //   .map((col) => {
+      //     return col.children.map((item) => [col.name, item.name]);
+      //   })
+      //   .flat();
     },
     generateTable() {
       let types = new Set(this.originData.map((item) => item.type));
-      types = [...types];
+      this.types = types = [...types];
       let columns = types.map((type) => {
         return this.originData.filter((item) => item.type === type);
       });
-      console.log("odata = ", columns);
-      let matrixData = columns.flat().map((row) => {
-        let arr = [];
-        for (let key in row) {
-          arr.push(row[key]);
-        }
-        return arr;
-      });
-      let dateValue = [
-        [12, 60],
-        [13, 61],
-        [13, 61],
-        [13, 61],
-        [13, 61],
-        [13, 61],
-        [13, 61],
-      ];
-      this.tableData = matrixData.map((col, i) => {
-        console.log([this.columns[i], ...col]);
-        return [
-          ...this.columns[i],
-          ...dateValue.map((item) => item[0] + "/" + item[1]),
-        ];
-      });
+      console.log("columns222 ===", columns);
+      let matrixData = columns.map((data) =>
+        data.map((row) => {
+          let arr = [];
+          for (let key in row) {
+            arr.push(row[key]);
+          }
+          return arr;
+        })
+      );
+      console.log("matrixData = ", matrixData);
+      // let dateValue = [
+      //   [12, 60],
+      //   [13, 61],
+      //   [13, 61],
+      //   [13, 61],
+      //   [13, 61],
+      //   [13, 61],
+      //   [13, 61],
+      // ];
+      let date = {
+        "2023/11/05": {
+          fds: [11, 61],
+          gfd: [111, 600],
+          gfd1: [12, 60],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/06": {
+          fds: [12, 611],
+          gfd: [12, 602],
+          gfd1: [12, 603],
+          gfd12: [12, 604],
+          橙子: [12, 605],
+          gfd123: [12, 606],
+        },
+        "2023/11/07": {
+          fds: [12, 62],
+          gfd: [12, 60],
+          gfd1: [12, 60],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/08": {
+          fds: [12, 63],
+          gfd: [12, 60],
+          gfd1: [12, 60],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/09": {
+          fds: [12, 64],
+          gfd: [12, 60],
+          gfd1: [12, 60],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/10": {
+          fds: [12, 65],
+          gfd: [12, 60],
+          gfd1: [12, 60],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/11": {
+          fds: [12, 66],
+          gfd: [12, 60],
+          gfd1: [12, 60],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/12": {
+          fds: [12, 67],
+          gfd: [12, 60],
+          gfd1: [12, 650],
+          gfd12: [12, 670],
+          橙子: [12, 680],
+          gfd123: [12, 680],
+        },
+        "2023/11/13": {
+          fds: [12, 610],
+          gfd: [12, 60],
+          gfd1: [12, 610],
+          gfd12: [12, 60],
+          橙子: [12, 60],
+          gfd123: [12, 60],
+        },
+        "2023/11/14": {
+          fds: [12, 602],
+          gfd: [12, 602],
+          gfd1: [12, 602],
+          gfd12: [12, 602],
+          橙子: [12, 620],
+          gfd123: [12, 620],
+        },
+        "2023/11/15": {
+          fds: [121, 6000],
+          gfd: [121, 600],
+          gfd1: [121, 600],
+          gfd12: [121, 600],
+          橙子: [121, 600],
+          gfd123: [521, 600],
+        },
+      };
+      this.tableData = matrixData.map((data, index) =>
+        data.map((col, i) => {
+          let name = columns[index][i].name;
+          console.log(this.weeks);
+          let dateValue = this.weeks.map((key) => {
+            console.log("result = ", this.weeks, key, name);
+            return date[key][name];
+          });
+          console.log("date = ====", dateValue);
+          return [
+            `${columns[index][i].name} (${columns[index][i].unit})`,
+            ...this.weeks.map((key) => {
+              return date[key][name];
+            }),
+            // ...dateValue.map((item) => item[0] + "/" + item[1]),
+            columns[index][i].count,
+          ];
+        })
+      );
+      console.log("this.tableData = ", this.tableData);
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -231,7 +356,7 @@ export default {
             unit: this.form.unit,
             count: 0,
           });
-          this.generateColumns();
+          // this.generateColumns();
           this.generateTable();
           localStorage.setItem("originData", JSON.stringify(this.originData));
           this.$message({
@@ -278,12 +403,12 @@ export default {
   mounted() {},
   created() {
     this.originData = this.getLocalData("originData", []);
+    this.weeks = this.generateWeeks();
     if (this.originData.length > 0) {
-      this.generateColumns();
+      // this.generateColumns();
       this.generateTable();
     }
     this.assetTypeData = this.getLocalData("assetTypeData", []);
-    this.weeks = this.generateWeeks();
   },
 };
 </script>
@@ -295,6 +420,9 @@ export default {
     font-size: 18px;
     font-weight: 500;
   }
+  .table-type {
+    font-size: 16px;
+  }
 
   .card-box {
     display: flex;
@@ -302,6 +430,12 @@ export default {
     .shicai-card {
       margin-right: 5px;
     }
+  }
+  .shengyu {
+    color: green;
+  }
+  .ruku {
+    color: red;
   }
   .add-card {
     width: 178px;

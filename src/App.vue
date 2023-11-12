@@ -1,11 +1,5 @@
 <template>
   <div id="app">
-    <nav class="daohang">
-      <router-link class="daohang" to="/wuliao/coffee">咖啡</router-link> |
-      <router-link class="daohang" to="/wuliao/branch">菜品</router-link> |
-      <router-link class="daohang" to="/wuliao/cake">蛋糕</router-link> |
-      <router-link class="daohang" to="/shicai/branch">食材</router-link>
-    </nav>
     <router-view />
   </div>
 </template>
