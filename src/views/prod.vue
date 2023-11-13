@@ -3,17 +3,17 @@
     {{ $route.params.id }}
     <div v-show="nodata">暂无数据，请先添加数据</div>
     <showTable
-      :originData="originData"
-      :date="date"
+      :originData="productsOriginData"
+      :date="productsDate"
       @cellDblClick="cellDblClick"
       ref="showtable"
     ></showTable>
-    <editTable ref="editTable" :originData="originData"></editTable>
+    <editTable ref="editTable" :originData="productsOriginData"></editTable>
     <editTableCell
       ref="editTableCell"
       @saveTableCell="saveTableCell"
     ></editTableCell>
-    <!-- 食材弹窗 -->
+    <!-- 产品弹窗 -->
     <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
       <el-form
         size="mini"
@@ -30,23 +30,12 @@
             autocomplete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item label="单位" prop="unit">
+        <el-form-item label="价格" prop="price">
           <el-input
             type="text"
-            v-model="form.unit"
+            v-model="form.price"
             autocomplete="off"
           ></el-input>
-        </el-form-item>
-        <el-form-item label="活动区域" prop="type">
-          <el-select v-model="form.type" placeholder="请选择">
-            <el-option
-              v-for="item in assetTypeData"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('form')">保存</el-button>
@@ -54,11 +43,9 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-    <AssetType ref="AssetType"></AssetType>
-    <el-button type="primary" @click="goProd">产品</el-button>
-    <el-button type="primary" @click="addAssets">添加食材</el-button>
-    <el-button type="success" @click="editAssets">修改食材</el-button>
-    <el-button type="success" @click="addAssetType">添加种类</el-button>
+    <el-button type="primary" @click="goWuliao">食材界面</el-button>
+    <el-button type="primary" @click="addAssets">添加产品</el-button>
+    <el-button type="success" @click="editAssets">修改产品</el-button>
   </div>
 </template>
 
@@ -66,34 +53,29 @@
 import showTable from "@/components/Material/showTable.vue";
 import editTable from "@/components/Material/editTable.vue";
 import editTableCell from "@/components/Material/editTableCell.vue";
-import AssetType from "@/components/AssetType.vue";
 import moment from "moment";
 
 export default {
-  name: "WuLiao",
+  name: "ProductView",
   components: {
     showTable,
-    AssetType,
     editTable,
     editTableCell,
   },
   data() {
     return {
-      date: [],
-      originData: [],
+      productsDate: [],
+      productsOriginData: [],
       currentData: {},
       rules: {
         name: [{ required: true, message: "请输入名称", trigger: "blur" }],
-        unit: [{ required: true, message: "请输入单位", trigger: "blur" }],
-        type: [{ required: true, message: "请选择类型", trigger: "change" }],
+        price: [{ required: true, message: "请输入单价", trigger: "blur" }],
       },
       form: {
         name: "",
-        unit: "",
-        type: "",
+        price: 0,
       },
       dealData: [],
-      assetTypeData: [],
       dialogVisible: false,
     };
   },
@@ -114,21 +96,15 @@ export default {
   },
   props: {},
   methods: {
-    goProd() {
-      let type = this.$route.params.id;
-      this.$router.push({ path: `/prod/${type}` });
+    goWuliao(type) {
+      this.$router.push({ path: `/wuliao/${type}` });
     },
-    saveTableCell({ ruku, shengyu, name, time }) {
-      let prev = this.date[time][name];
-      if (prev[0] == ruku && prev[1] == shengyu) {
-        return;
-      } else {
-        this.date[time][name] = [ruku, shengyu];
-        this.currentData.date = this.date;
-        let key = this.$route.params.id;
-        localStorage.setItem(key, JSON.stringify(this.currentData));
-        this.$refs["showtable"].generateTable();
-      }
+    saveTableCell({ sold, price, name, time }) {
+      this.productsDate[time][name] = [sold, price];
+      this.currentData.productsDate = this.productsDate;
+      let key = this.$route.params.id;
+      localStorage.setItem(key, JSON.stringify(this.currentData));
+      this.$refs["showtable"].generateTable();
     },
     cellDblClick({ column, selectedData, row, weeks }) {
       if (column.index === row.length - 1) {
@@ -139,13 +115,13 @@ export default {
       // console.log("选中的数据 = ", row[column.index]);
       // console.log("对应的日期 = ", weeks[column.index - 1]);
       // console.log("selectedData = ", selectedData);
-      let name = row[0].split(" ")[0];
+      let name = row[0];
       let timeKey = weeks[column.index - 1];
       if (column.index > 0 && column.index < row.length - 1) {
-        let data = this.date[timeKey][name];
+        let data = this.productsDate[timeKey][name];
         this.$refs.editTableCell.showDialog({
-          ruku: data[0],
-          shengyu: data[1],
+          price: data[0],
+          sold: data[1],
           time: timeKey,
           name: name,
         });
@@ -158,28 +134,9 @@ export default {
     editAssets() {
       this.$refs.editTable.showDialog();
     },
-    addAssetType() {
-      this.$refs.AssetType.showDialog();
-    },
-    deleteData(data, index) {
-      data.splice(index, 1);
-    },
     addAssets() {
       this.currentData = this.getCurrentData();
-      this.assetTypeData = this.currentData.assetTypeData;
-      if (this.assetTypeData.length === 0) {
-        this.$confirm("食材种类为空,不能添加食材", "提示", {
-          confirmButtonText: "去添加食材种类",
-          cancelButtonText: "取消",
-          type: "warning",
-        })
-          .then(() => {
-            this.$refs.AssetType.showDialog();
-          })
-          .catch(() => {});
-      } else {
-        this.dialogVisible = true;
-      }
+      this.dialogVisible = true;
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
@@ -188,9 +145,9 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          const { name, type } = this.form;
-          let result = this.originData.filter(
-            (item) => item.name === name && item.type === type
+          const { name } = this.form;
+          let result = this.productsOriginData.filter(
+            (item) => item.name === name
           );
           if (result.length > 0) {
             this.$message({
@@ -199,21 +156,19 @@ export default {
             });
             return;
           }
-          let id = this.originData.length;
-          this.originData.push({
+          let id = this.productsOriginData.length;
+          this.productsOriginData.push({
             name: this.form.name.replace(/\s*/g, ""),
-            type: this.form.type,
-            unit: this.form.unit,
-            count: 0,
+            price: this.form.price,
             id: id,
+            count: 0,
           });
-          this.updateDate(this.date);
-          // this.generateColumns();
+          this.updateDate(this.productsDate);
           let key = this.$route.params.id;
-          this.currentData.originData = this.originData;
+          this.currentData.productsOriginData = this.productsOriginData;
           localStorage.setItem(key, JSON.stringify(this.currentData));
           this.$message({
-            message: `类型${this.form.name}保存成功`,
+            message: `产品 ${this.form.name}保存成功`,
             type: "success",
           });
           this.dialogVisible = false;
@@ -226,9 +181,8 @@ export default {
     getCurrentData() {
       let key = this.$route.params.id;
       let currentData = this.getLocalData(key, {
-        originData: [],
-        date: {},
-        assetTypeData: [],
+        productsDate: {},
+        productsOriginData: [],
       });
       return currentData;
     },
@@ -247,28 +201,28 @@ export default {
     updateDate(date) {
       let weeks = this.generateWeeks();
       weeks.forEach((time) => {
-        if (this.originData.length > 0) {
+        if (this.productsOriginData.length > 0) {
           if (!date[time]) {
             date[time] = {};
           }
-          this.originData.forEach((item) => {
+          this.productsOriginData.forEach((item) => {
             if (!date[time][item.name]) {
               date[time][item.name] = [0, 0];
             }
           });
         }
       });
-      this.currentData.date = date;
-      this.date = date;
+      this.currentData.productsDate = date;
+      this.productsDate = date;
       let key = this.$route.params.id;
       localStorage.setItem(key, JSON.stringify(this.currentData));
     },
   },
   created() {
     this.currentData = this.getCurrentData();
-    this.originData = this.currentData.originData;
-    this.assetTypeData = this.currentData.assetTypeData;
-    this.date = this.currentData.date;
+    debugger;
+    this.productsOriginData = this.currentData.productsOriginData;
+    this.productsDate = this.currentData.productsDate;
   },
   mounted() {},
 };
