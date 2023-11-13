@@ -2,7 +2,16 @@
   <div class="wuliao-container">
     {{ $route.params.id }}
     <div v-show="nodata">暂无数据，请先添加数据</div>
-    <showTable :originData="originData" :date="date"></showTable>
+    <showTable
+      :originData="originData"
+      :date="date"
+      @cellDblClick="cellDblClick"
+    ></showTable>
+    <editTable ref="editTable" :originData="originData"></editTable>
+    <editTableCell
+      ref="editTableCell"
+      @saveTableCell="saveTableCell"
+    ></editTableCell>
     <!-- 食材弹窗 -->
     <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
       <el-form
@@ -44,7 +53,6 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-    <editTable ref="editTable" :originData="originData"></editTable>
     <AssetType ref="AssetType"></AssetType>
     <el-button type="primary" @click="addAssets">添加食材</el-button>
     <el-button type="success" @click="editAssets">修改食材</el-button>
@@ -55,6 +63,7 @@
 <script>
 import showTable from "@/components/Material/showTable.vue";
 import editTable from "@/components/Material/editTable.vue";
+import editTableCell from "@/components/Material/editTableCell.vue";
 import AssetType from "@/components/AssetType.vue";
 import moment from "moment";
 
@@ -64,6 +73,7 @@ export default {
     showTable,
     AssetType,
     editTable,
+    editTableCell,
   },
   data() {
     return {
@@ -102,6 +112,37 @@ export default {
   },
   props: {},
   methods: {
+    saveTableCell({ ruku, shengyu, name, time }) {
+      this.date[time][name] = [ruku, shengyu];
+      this.currentData.date = this.date;
+      let key = this.$route.params.id;
+      localStorage.setItem(key, JSON.stringify(this.currentData));
+    },
+    cellDblClick({ column, selectedData, row, weeks }) {
+      if (column.index === row.length - 1) {
+        return;
+      }
+      // console.log("column = ", column);
+      // console.log("weeks = ", weeks);
+      // console.log("选中的数据 = ", row[column.index]);
+      // console.log("对应的日期 = ", weeks[column.index - 1]);
+      // console.log("selectedData = ", selectedData);
+      let name = row[0].split(" ")[0];
+      let timeKey = weeks[column.index - 1];
+      if (column.index > 0 && column.index < row.length - 1) {
+        let data = this.date[timeKey][name];
+        this.$refs.editTableCell.showDialog({
+          ruku: data[0],
+          shengyu: data[1],
+          time: timeKey,
+          name: name,
+        });
+      } else {
+        this.$refs.editTable.showDialog({
+          form: { ...selectedData },
+        });
+      }
+    },
     editAssets() {
       this.$refs.editTable.showDialog();
     },
@@ -146,11 +187,13 @@ export default {
             });
             return;
           }
+          let id = this.originData.length;
           this.originData.push({
-            name: this.form.name,
+            name: this.form.name.replace(/\s*/g, ""),
             type: this.form.type,
             unit: this.form.unit,
             count: 0,
+            id: id,
           });
           this.updateDate(this.date);
           // this.generateColumns();
@@ -190,7 +233,6 @@ export default {
       return weeks;
     },
     updateDate(date) {
-      debugger;
       let weeks = this.generateWeeks();
       weeks.forEach((time) => {
         if (this.originData.length > 0) {

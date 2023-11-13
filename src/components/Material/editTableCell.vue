@@ -1,9 +1,9 @@
 <template>
   <div class="shicai-container">
     <el-dialog
-      title="修改食材"
+      :title="title"
       :visible.sync="dialogVisible"
-      custom-class="edit-table-class"
+      custom-class="edit-table-cell-class"
     >
       <el-form
         size="mini"
@@ -13,30 +13,19 @@
         label-width="100px"
         class="demo-ruleForm"
       >
-        <el-form-item label="食材名称" prop="name">
+        <el-form-item label="入库" prop="ruku">
           <el-input
             type="text"
-            v-model="form.name"
+            v-model="form.ruku"
             autocomplete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item label="单位" prop="unit">
+        <el-form-item label="剩余" prop="shengyu">
           <el-input
             type="text"
-            v-model="form.unit"
+            v-model="form.shengyu"
             autocomplete="off"
           ></el-input>
-        </el-form-item>
-        <el-form-item label="食材类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择食材类型">
-            <el-option
-              v-for="item in assetTypeData"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('form')">保存</el-button>
@@ -55,17 +44,18 @@ export default {
   components: {},
   data() {
     return {
-      assetTypeData: [],
       dialogVisible: false,
       rules: {
         name: [{ required: true, message: "请输入名称", trigger: "blur" }],
-        unit: [{ required: true, message: "请输入单位", trigger: "blur" }],
-        type: [{ required: true, message: "请选择类型", trigger: "change" }],
+        ruku: [{ required: true, message: "请输入入库数", trigger: "blur" }],
+        shengyu: [{ required: true, message: "请输入剩余数", trigger: "blur" }],
       },
+      time: "",
       form: {
         name: "",
-        unit: "",
-        type: "",
+        ruku: "",
+        shengyu: "",
+        time: "",
       },
     };
   },
@@ -77,11 +67,11 @@ export default {
     },
   },
   computed: {
-    // title() {
-    //   const { time, name } = this.form;
-    //   let week = this.getWeek(time);
-    //   return name + " " + time + " " + week;
-    // },
+    title() {
+      const { time, name } = this.form;
+      let week = this.getWeek(time);
+      return name + " " + time + " " + week;
+    },
   },
   methods: {
     getWeek(date) {
@@ -107,22 +97,9 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          const { name, type } = this.form;
-          let result = this.originData.filter(
-            (item) => item.name === name && item.type === type
-          );
-          if (result.length > 0) {
-            this.$message({
-              message: `类型${this.form.name}已存在`,
-              type: "warning",
-            });
-            return;
-          }
-          // this.generateColumns();
-          this.generateTable();
-          // localStorage.setItem("originData", JSON.stringify(this.originData));
+          this.$emit("saveTableCell", { ...this.form });
           this.$message({
-            message: `类型${this.form.name}保存成功`,
+            message: `${this.form.name} 修改成功`,
             type: "success",
           });
           this.dialogVisible = false;
@@ -133,12 +110,13 @@ export default {
       });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields();
       this.dialogVisible = false;
+      this.$refs[formName].resetFields();
     },
-    showDialog(data) {
-      console.log("editdata =", data);
+    showDialog(form) {
+      console.log("editdata =", form);
       this.dialogVisible = true;
+      this.form = form;
     },
     handleClose() {
       this.dialogVisible = false;
@@ -151,7 +129,6 @@ export default {
       let currentData = this.getLocalData(key, {
         originData: [],
         date: {},
-        assetTypeData: [],
       });
       return currentData;
     },
@@ -159,22 +136,13 @@ export default {
   mounted() {},
   created() {
     this.currentData = this.getCurrentData();
-    this.assetTypeData = this.currentData.assetTypeData;
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-// .edit-table-class {
-//   height: 80vh;
-// }
 .shicai-container {
-  .edit-table-class {
-    .el-dialog__header {
-      display: none;
-    }
-  }
   .p-title {
     font-size: 18px;
     font-weight: 500;

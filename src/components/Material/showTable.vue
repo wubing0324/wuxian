@@ -2,7 +2,12 @@
   <div class="shicai-container">
     <div v-for="(data, ids) in tableData" :key="types[ids]">
       <p class="table-type">{{ types[ids] }}</p>
-      <el-table :data="data" style="width: 100%">
+      <el-table
+        :data="data"
+        style="width: 100%"
+        @cell-dblclick="cellDblClick"
+        :cell-class-name="tableCellClassName"
+      >
         <el-table-column
           :label="column"
           v-for="(column, index) in getTitle(ids)"
@@ -23,17 +28,22 @@
         </el-table-column>
       </el-table>
     </div>
+    <editTable :rowName="rowName"></editTable>
   </div>
 </template>
 
 <script>
 import moment from "moment";
+import editTable from "./editTable.vue";
 
 export default {
   name: "HelloWorld",
-  components: {},
+  components: {
+    editTable,
+  },
   data() {
     return {
+      rowName: "",
       types: [],
       columns: [],
       tableData: [],
@@ -72,6 +82,33 @@ export default {
     },
   },
   methods: {
+    getFormatName(prev, next) {
+      return `${prev} (${next})`;
+    },
+    tableCellClassName({ row, column, rowIndex, columnIndex }) {
+      //注意这里是解构
+      //利用单元格的 className 的回调方法，给行列索引赋值
+      row.index = rowIndex;
+      column.index = columnIndex;
+    },
+    cellDblClick(row, column) {
+      let selectedData = this.originData.find(
+        (data) => this.getFormatName(data.name, data.unit) === row[0]
+      );
+      this.$emit("cellDblClick", {
+        column,
+        selectedData,
+        row,
+        weeks: this.weeks,
+      });
+    },
+    rowDbClick(row) {
+      // @row-dblclick="rowDbClick"
+      let selectedData = this.originData.find(
+        (data) => this.getFormatName(data.name, data.unit) === row[0]
+      );
+      console.log("selectedData = ", selectedData);
+    },
     isArray(arr) {
       return Object.prototype.toString.call(arr) === "[object Array]";
     },
@@ -120,7 +157,6 @@ export default {
       let columns = types.map((type) => {
         return this.originData.filter((item) => item.type === type);
       });
-      console.log("columns222 ===", columns);
       let matrixData = columns.map((data) =>
         data.map((row) => {
           let arr = [];
@@ -130,111 +166,12 @@ export default {
           return arr;
         })
       );
-      console.log("matrixData = ", matrixData);
-      // let dateValue = [
-      //   [12, 60],
-      //   [13, 61],
-      //   [13, 61],
-      //   [13, 61],
-      //   [13, 61],
-      //   [13, 61],
-      //   [13, 61],
-      // ];
-      // let date = {
-      //   "2023/11/05": {
-      //     fds: [11, 61],
-      //     gfd: [111, 600],
-      //     gfd1: [12, 60],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/06": {
-      //     fds: [12, 611],
-      //     gfd: [12, 602],
-      //     gfd1: [12, 603],
-      //     gfd12: [12, 604],
-      //     橙子: [12, 605],
-      //     gfd123: [12, 606],
-      //   },
-      //   "2023/11/07": {
-      //     fds: [12, 62],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 60],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/08": {
-      //     fds: [12, 63],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 60],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/09": {
-      //     fds: [12, 64],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 60],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/10": {
-      //     fds: [12, 65],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 60],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/11": {
-      //     fds: [12, 66],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 60],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/12": {
-      //     fds: [12, 67],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 650],
-      //     gfd12: [12, 670],
-      //     橙子: [12, 680],
-      //     gfd123: [12, 680],
-      //   },
-      //   "2023/11/13": {
-      //     fds: [12, 610],
-      //     gfd: [12, 60],
-      //     gfd1: [12, 610],
-      //     gfd12: [12, 60],
-      //     橙子: [12, 60],
-      //     gfd123: [12, 60],
-      //   },
-      //   "2023/11/14": {
-      //     fds: [12, 602],
-      //     gfd: [12, 602],
-      //     gfd1: [12, 602],
-      //     gfd12: [12, 602],
-      //     橙子: [12, 620],
-      //     gfd123: [12, 620],
-      //   },
-      //   "2023/11/15": {
-      //     fds: [121, 6000],
-      //     gfd: [121, 600],
-      //     gfd1: [121, 600],
-      //     gfd12: [121, 600],
-      //     橙子: [121, 600],
-      //     gfd123: [521, 600],
-      //   },
-      // };
       this.tableData = matrixData.map((data, index) =>
         data.map((col, i) => {
           let name = columns[index][i].name;
           return [
-            `${columns[index][i].name} (${columns[index][i].unit})`,
+            this.getFormatName(columns[index][i].name, columns[index][i].unit),
+            // `${columns[index][i].name} (${columns[index][i].unit})`,
             ...this.weeks.map((key) => {
               return this.date[key][name];
             }),
@@ -242,7 +179,6 @@ export default {
           ];
         })
       );
-      console.log("this.tableData = ", this.tableData);
     },
   },
   mounted() {},
