@@ -1,10 +1,9 @@
 <template>
   <div class="wuliao-container">
-    {{ $route.params.id }}
     <div v-show="nodata">暂无数据，请先添加数据</div>
     <showTable
-      :originData="productsOriginData"
       :date="productsDate"
+      :originData="productsOriginData"
       @cellDblClick="cellDblClick"
       ref="showtable"
     ></showTable>
@@ -43,16 +42,19 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <addProduct ref="addProduct"></addProduct>
     <el-button type="primary" @click="goWuliao">食材界面</el-button>
     <el-button type="primary" @click="addAssets">添加产品</el-button>
+    <el-button type="primary" @click="addAssets2">添加产品22</el-button>
     <el-button type="success" @click="editAssets">修改产品</el-button>
   </div>
 </template>
 
 <script>
-import showTable from "@/components/Material/showTable.vue";
-import editTable from "@/components/Material/editTable.vue";
-import editTableCell from "@/components/Material/editTableCell.vue";
+import showTable from "@/components/ProdDuct/showTable.vue";
+import editTable from "@/components/ProdDuct/editTable.vue";
+import addProduct from "@/components/ProdDuct/addProduct.vue";
+import editTableCell from "@/components/ProdDuct/editTableCell.vue";
 import moment from "moment";
 
 export default {
@@ -61,10 +63,11 @@ export default {
     showTable,
     editTable,
     editTableCell,
+    addProduct,
   },
   data() {
     return {
-      productsDate: [],
+      productsDate: {},
       productsOriginData: [],
       currentData: {},
       rules: {
@@ -99,8 +102,9 @@ export default {
     goWuliao(type) {
       this.$router.push({ path: `/wuliao/${type}` });
     },
-    saveTableCell({ sold, price, name, time }) {
-      this.productsDate[time][name] = [sold, price];
+    saveTableCell({ sold, name, time, allPrice }) {
+      this.productsDate[time][name] = [sold, allPrice];
+      debugger;
       this.currentData.productsDate = this.productsDate;
       let key = this.$route.params.id;
       localStorage.setItem(key, JSON.stringify(this.currentData));
@@ -116,18 +120,21 @@ export default {
       // console.log("对应的日期 = ", weeks[column.index - 1]);
       // console.log("selectedData = ", selectedData);
       let name = row[0];
-      let timeKey = weeks[column.index - 1];
-      if (column.index > 0 && column.index < row.length - 1) {
+      let timeKey = weeks[column.index - 2];
+      if (column.index > 1 && column.index < row.length - 1) {
         let data = this.productsDate[timeKey][name];
+        console.log(data);
         this.$refs.editTableCell.showDialog({
-          price: data[0],
-          sold: data[1],
+          sold: data[0],
+          allPrice: Number(data[0]) * Number(row[1]),
           time: timeKey,
           name: name,
+          price: Number(row[1]),
         });
       } else {
         this.$refs.editTable.showDialog({
           form: { ...selectedData },
+          dialogType: "edit",
         });
       }
     },
@@ -137,6 +144,9 @@ export default {
     addAssets() {
       this.currentData = this.getCurrentData();
       this.dialogVisible = true;
+    },
+    addAssets2() {
+      this.$refs["addProduct"].showDialog();
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
@@ -162,6 +172,7 @@ export default {
             price: this.form.price,
             id: id,
             count: 0,
+            checkList: [],
           });
           this.updateDate(this.productsDate);
           let key = this.$route.params.id;
@@ -220,7 +231,6 @@ export default {
   },
   created() {
     this.currentData = this.getCurrentData();
-    debugger;
     this.productsOriginData = this.currentData.productsOriginData;
     this.productsDate = this.currentData.productsDate;
   },

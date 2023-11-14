@@ -14,10 +14,17 @@
         class="demo-ruleForm"
       >
         <el-form-item label="入库" prop="ruku">
+          <el-input-number
+            v-model="increment"
+            @change="incrementChange"
+            label="新增"
+          ></el-input-number>
+          <span @click="handleAdd">计算</span>
           <el-input
             type="number"
             v-model.number="form.ruku"
             autocomplete="off"
+            @change="rukuChange"
           ></el-input>
         </el-form-item>
         <el-form-item label="剩余" prop="shengyu">
@@ -44,6 +51,9 @@ export default {
   components: {},
   data() {
     return {
+      increment: 0,
+      needIncrement: 0,
+      prev: 0,
       dialogVisible: false,
       rules: {
         name: [{ required: true, message: "请输入名称", trigger: "blur" }],
@@ -74,6 +84,19 @@ export default {
     },
   },
   methods: {
+    handleAdd() {
+      this.form.ruku = Number(this.form.ruku) + this.increment;
+      this.form.shengyu = Number(this.form.shengyu) + this.increment;
+      this.needIncrement = this.increment;
+    },
+    incrementChange() {
+      // this.form.ruku = Number(this.form.ruku) + (val - this.prev);
+      // this.form.shengyu = Number(this.form.shengyu) + (val - this.prev);
+      // this.prev = val;
+    },
+    rukuChange(val) {
+      console.log(val, this.form.shengyu);
+    },
     getWeek(date) {
       // 参数时间戳
       let week = moment(date).day();
@@ -97,12 +120,19 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$emit("saveTableCell", { ...this.form });
+          // this.form.shengyu =
+          //   Number(this.form.shengyu) + Number(this.form.ruku);
+          this.$emit("saveTableCell", {
+            ...this.form,
+            needIncrement: this.needIncrement,
+          });
           this.$message({
             message: `${this.form.name} 修改成功`,
             type: "success",
           });
           this.dialogVisible = false;
+          this.needIncrement = 0;
+          this.increment = 0;
         } else {
           console.log("error submit!!");
           return false;
@@ -111,11 +141,15 @@ export default {
     },
     resetForm(formName) {
       this.dialogVisible = false;
+      this.increment = 0;
+      this.needIncrement = 0;
       this.$refs[formName].resetFields();
     },
     showDialog(form) {
       console.log("editdata =", form);
       this.dialogVisible = true;
+      this.increment = 0;
+      this.needIncrement = 0;
       this.form = form;
     },
     handleClose() {

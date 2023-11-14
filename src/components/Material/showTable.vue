@@ -167,6 +167,7 @@ export default {
           return arr;
         })
       );
+      console.log("this.date = ", this.date);
       this.tableData = matrixData.map((data, index) =>
         data.map((col, i) => {
           let name = columns[index][i].name;

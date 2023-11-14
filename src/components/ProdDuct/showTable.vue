@@ -1,33 +1,30 @@
 <template>
   <div class="shicai-container">
-    <div v-for="(data, ids) in tableData" :key="types[ids]">
-      <p class="table-type">{{ types[ids] }}</p>
-      <el-table
-        :data="data"
-        style="width: 100%"
-        @cell-dblclick="cellDblClick"
-        :cell-class-name="tableCellClassName"
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      @cell-dblclick="cellDblClick"
+      :cell-class-name="tableCellClassName"
+    >
+      <el-table-column
+        :label="column"
+        v-for="(column, index) in getTitle()"
+        :key="column + index"
       >
-        <el-table-column
-          :label="column"
-          v-for="(column, index) in getTitle(ids)"
-          :key="column + index"
-        >
-          <el-table-column :label="getSubTitle(index, data[0].length)">
-            <template slot-scope="scope">
-              <div v-if="isArray(scope.row[index])">
-                <span class="ruku">{{ scope.row[index][0] }}</span>
-                /
-                <span class="shengyu">{{ scope.row[index][1] }}</span>
-              </div>
-              <div v-else>
-                {{ scope.row[index] }}
-              </div>
-            </template>
-          </el-table-column>
+        <el-table-column :label="getSubTitle(index, tableData[0].length)">
+          <template slot-scope="scope">
+            <div v-if="isArray(scope.row[index])">
+              <span class="ruku">{{ scope.row[index][0] }}</span>
+              /
+              <span class="shengyu">{{ scope.row[index][1] }}</span>
+            </div>
+            <div v-else>
+              {{ scope.row[index] }}
+            </div>
+          </template>
         </el-table-column>
-      </el-table>
-    </div>
+      </el-table-column>
+    </el-table>
     <editTable :rowName="rowName"></editTable>
   </div>
 </template>
@@ -37,7 +34,7 @@ import moment from "moment";
 import editTable from "./editTable.vue";
 
 export default {
-  name: "HelloWorld",
+  name: "ShowTavble",
   components: {
     editTable,
   },
@@ -64,7 +61,8 @@ export default {
   },
   watch: {
     originData: {
-      handler: function () {
+      handler: function (val) {
+        console.log("tyable = ", val);
         this.generateTable();
       },
       deep: true,
@@ -93,9 +91,7 @@ export default {
       column.index = columnIndex;
     },
     cellDblClick(row, column) {
-      let selectedData = this.originData.find(
-        (data) => this.getFormatName(data.name, data.unit) === row[0]
-      );
+      let selectedData = this.originData.find((data) => data.name === row[0]);
       this.$emit("cellDblClick", {
         column,
         selectedData,
@@ -113,7 +109,7 @@ export default {
     isArray(arr) {
       return Object.prototype.toString.call(arr) === "[object Array]";
     },
-    getTitle(index) {
+    getTitle() {
       let mapWeek = {
         1: "周一",
         2: "周二",
@@ -123,19 +119,19 @@ export default {
         6: "周六",
         7: "周日",
       };
-      let weeks = this.weeks.map(
-        (key, index) => key + "/" + mapWeek[index + 1]
-      );
-      return [this.types[index], ...weeks, ""];
+      let weeks = this.weeks.map((key, ids) => key + "/" + mapWeek[ids + 1]);
+      return ["", "", ...weeks, ""];
     },
     getSubTitle(index, len) {
-      let title = "入库/剩余";
+      let title = "售出/总价";
       if (index === 0) {
         title = "食材名称/规格";
+      } else if (index === 1) {
+        title = "单价（￥）";
       } else if (index === len - 1) {
         title = "总量";
       } else {
-        title = "入库/剩余";
+        title = "售出/总价";
       }
 
       return title;
@@ -153,32 +149,24 @@ export default {
       return weeks;
     },
     generateTable() {
-      let types = new Set(this.originData.map((item) => item.type));
-      this.types = types = [...types];
-      let columns = types.map((type) => {
-        return this.originData.filter((item) => item.type === type);
+      let matrixData = this.originData.map((row) => {
+        let arr = [];
+        for (let key in row) {
+          arr.push(row[key]);
+        }
+        return arr;
       });
-      let matrixData = columns.map((data) =>
-        data.map((row) => {
-          let arr = [];
-          for (let key in row) {
-            arr.push(row[key]);
-          }
-          return arr;
-        })
-      );
-      this.tableData = matrixData.map((data, index) =>
-        data.map((col, i) => {
-          let name = columns[index][i].name;
-          return [
-            this.getFormatName(columns[index][i].name, columns[index][i].unit),
-            ...this.weeks.map((key) => {
-              return this.date[key][name];
-            }),
-            columns[index][i].count,
-          ];
-        })
-      );
+      this.tableData = matrixData.map((col) => {
+        return [
+          col[0],
+          col[1],
+          ...this.weeks.map((key) => {
+            return this.date[key][col[0]];
+          }),
+          col[3],
+        ];
+      });
+      console.log("this.tableData = ", this.tableData);
     },
   },
   mounted() {},

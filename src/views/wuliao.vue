@@ -1,6 +1,5 @@
 <template>
   <div class="wuliao-container">
-    {{ $route.params.id }}
     <div v-show="nodata">暂无数据，请先添加数据</div>
     <showTable
       :originData="originData"
@@ -118,7 +117,7 @@ export default {
       let type = this.$route.params.id;
       this.$router.push({ path: `/prod/${type}` });
     },
-    saveTableCell({ ruku, shengyu, name, time }) {
+    saveTableCell({ ruku, shengyu, name, time, needIncrement }) {
       let prev = this.date[time][name];
       if (prev[0] == ruku && prev[1] == shengyu) {
         return;
@@ -126,8 +125,17 @@ export default {
         this.date[time][name] = [ruku, shengyu];
         this.currentData.date = this.date;
         let key = this.$route.params.id;
+        let result = this.originData.find((item) => item.name === name);
+        console.log("result = ", result);
+        // result.count = result.count + ruku;
         localStorage.setItem(key, JSON.stringify(this.currentData));
         this.$refs["showtable"].generateTable();
+        Object.keys(this.date).forEach((time1) => {
+          if (moment(time1).isAfter(moment(time))) {
+            let data = this.date[time1][name];
+            data[1] = Number(data[1]) + needIncrement;
+          }
+        });
       }
     },
     cellDblClick({ column, selectedData, row, weeks }) {
@@ -227,7 +235,9 @@ export default {
       let key = this.$route.params.id;
       let currentData = this.getLocalData(key, {
         originData: [],
+        productsOriginData: [],
         date: {},
+        productsDate: {},
         assetTypeData: [],
       });
       return currentData;
