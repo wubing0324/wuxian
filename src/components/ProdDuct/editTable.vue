@@ -1,7 +1,7 @@
 <template>
   <div class="shicai-container">
     <el-dialog
-      title="修改食材"
+      :title="'修改食材' + dialogType"
       :visible.sync="dialogVisible"
       custom-class="edit-table-class"
     >
@@ -13,6 +13,7 @@
       <component
         :is="componentName"
         @handleClose="handleClose"
+        @updateProd="updateProd"
         :currentForm="currentForm"
         :dialogType="dialogType"
       />
@@ -34,7 +35,6 @@ export default {
   },
   data() {
     return {
-      assetTypeData: [],
       dialogVisible: false,
       currentForm: {},
       dialogType: "add",
@@ -62,7 +62,11 @@ export default {
     showDialog({ form, dialogType }) {
       console.log("editdata =", form);
       this.setStepIndex(1);
-      this.currentForm = form;
+      if (dialogType === "edit") {
+        this.currentForm = form;
+      } else {
+        this.currentForm = {};
+      }
       this.dialogType = dialogType;
       this.dialogVisible = true;
     },
@@ -70,24 +74,12 @@ export default {
       this.dialogVisible = false;
       this.currentForm = {};
     },
-    saveData() {
-      this.dialogVisible = false;
-    },
-    getCurrentData() {
-      let key = this.$route.params.id;
-      let currentData = this.getLocalData(key, {
-        originData: [],
-        date: {},
-        assetTypeData: [],
-      });
-      return currentData;
+    updateProd(data) {
+      this.$emit("updateProd", data);
     },
   },
   mounted() {},
-  created() {
-    this.currentData = this.getCurrentData();
-    this.assetTypeData = this.currentData.assetTypeData;
-  },
+  created() {},
 };
 </script>
 
@@ -96,7 +88,7 @@ export default {
 .shicai-container {
   .edit-table-class {
     .el-dialog__header {
-      display: none;
+      // display: none;
     }
   }
   .el-step {

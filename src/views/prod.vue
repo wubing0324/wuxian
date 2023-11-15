@@ -7,7 +7,11 @@
       @cellDblClick="cellDblClick"
       ref="showtable"
     ></showTable>
-    <editTable ref="editTable" :originData="productsOriginData"></editTable>
+    <editTable
+      ref="editTable"
+      @updateProd="updateProd"
+      :originData="productsOriginData"
+    ></editTable>
     <editTableCell
       ref="editTableCell"
       @saveTableCell="saveTableCell"
@@ -167,8 +171,12 @@ export default {
       this.$refs.editTable.showDialog();
     },
     addAssets() {
-      this.currentData = this.getCurrentData();
-      this.dialogVisible = true;
+      // this.currentData = this.getCurrentData();
+      // this.dialogVisible = true;
+      this.$refs.editTable.showDialog({
+        form: {},
+        dialogType: "add",
+      });
     },
     addAssets2() {
       this.$refs["addProduct"].showDialog();
@@ -176,6 +184,50 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields();
       this.dialogVisible = false;
+    },
+    updateProd({ id, name, price, checkList, form, type }) {
+      if (type === "add") {
+        let newID = this.productsOriginData.length;
+        let result = this.productsOriginData.filter(
+          (item) => item.id === newID
+        );
+        if (result.length > 0) {
+          this.$message({
+            message: `类型${name}已存在`,
+            type: "warning",
+          });
+          return;
+        }
+        this.productsOriginData.push({
+          name: name,
+          price: price,
+          id: newID,
+          count: 0,
+          checkList: checkList,
+        });
+        this.$message({
+          message: `产品 ${this.form.name}保存成功`,
+          type: "success",
+        });
+        this.currentData.recipes[name] = form;
+        this.currentData.productsOriginData = this.productsOriginData;
+        this.updateDate(this.productsDate);
+      } else {
+        let result = this.productsOriginData.find((item) => item.id === id);
+        if (!result) {
+          this.$message({
+            message: `类型${name}已存在`,
+            type: "warning",
+          });
+          return;
+        }
+        result.name = name;
+        result.price = price;
+        result.checkList = checkList;
+        this.currentData.recipes[name] = form;
+        this.currentData.productsOriginData = this.productsOriginData;
+        this.updateDate(this.productsDate);
+      }
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -248,14 +300,14 @@ export default {
       this.currentData.productsDate = date;
       this.productsDate = date;
       let key = this.$route.params.id;
+      debugger;
       localStorage.setItem(key, JSON.stringify(this.currentData));
     },
   },
   created() {
     this.currentData = this.getCurrentData();
-    this.productsOriginData =
-      this.currentData.productsOriginData || this.productsOriginData;
-    this.productsDate = this.currentData.productsDate || this.productsDate;
+    this.productsOriginData = this.currentData.productsOriginData;
+    this.productsDate = this.currentData.productsDate;
     this.recipes = this.currentData.recipes;
     this.date = this.currentData.date;
   },

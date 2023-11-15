@@ -36,11 +36,9 @@ export default {
   components: {},
   data() {
     return {
-      dialogVisible: false,
       productsOriginData: [],
       productsDate: {},
       form: {},
-      recipes: {},
     };
   },
   props: {
@@ -48,6 +46,10 @@ export default {
     originData: {
       type: Array,
       default: () => [],
+    },
+    dialogType: {
+      type: String,
+      default: () => "add",
     },
   },
   computed: {
@@ -79,16 +81,35 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.setStepIndex(this.stepIndex + 1);
-          this.$message({
-            message: `保存成功`,
-            type: "success",
-          });
-          this.dialogVisible = false;
-          this.recipes[this.formInfo.name] = { ...this.form };
-          this.$refs[formName].resetFields();
+          if (this.dialogType === "add") {
+            this.$emit("updateProd", {
+              type: this.dialogType, // 表单状态
+              checkList: this.checkList, //构成所需食材
+              ...this.formInfo, // 产品属性
+              form: { ...this.form }, // 食材价格
+            });
+            this.$emit("handleClose");
+          } else {
+            let result = this.productsOriginData.filter(
+              (item) => item.id === this.formInfo.id
+            );
+            if (result.length > 0) {
+              this.$message({
+                message: `类型${this.formInfo.name}已存在`,
+                type: "warning",
+              });
+              return;
+            }
+            this.$emit("updateProd", {
+              type: this.dialogType,
+              checkList: this.checkList,
+              ...this.formInfo,
+              form: { ...this.form },
+            });
+            this.$emit("handleClose");
+          }
           this.$emit("handleClose");
-          console.log("this.recipes = ", this.recipes);
-          this.setRecipesToLocal();
+          this.$refs[formName].resetFields();
         } else {
           console.log("error submit!!");
           return false;
@@ -101,17 +122,8 @@ export default {
     },
     getCurrentData() {
       let key = this.$route.params.id;
-      let currentData = this.getLocalData(key, {
-        productsOriginData: [],
-        productsDate: {},
-      });
+      let currentData = this.getLocalData(key);
       return currentData;
-    },
-    setRecipesToLocal() {
-      this.currentData.recipes = this.recipes;
-      this.productsOriginData.checkList = this.checkList;
-      let key = this.$route.params.id;
-      localStorage.setItem(key, JSON.stringify(this.currentData));
     },
   },
   mounted() {},
@@ -119,11 +131,6 @@ export default {
     this.currentData = this.getCurrentData();
     this.productsOriginData = this.currentData.productsOriginData;
     this.productsDate = this.currentData.productsDate;
-    if (!this.currentData.recipes) {
-      this.setRecipesToLocal();
-    } else {
-      this.recipes = this.currentData.recipes;
-    }
   },
 };
 </script>

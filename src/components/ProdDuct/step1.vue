@@ -55,20 +55,20 @@ export default {
           { required: true, message: "请选择类型", trigger: "change" },
         ],
       },
-      originData: [],
       form: {
         name: "",
         price: "",
         checkList: [],
+        id: "",
       },
     };
   },
   watch: {
     currentForm: {
       handler: function (val) {
-        this.form.name = val.name || this.form.name;
-        this.form.price = val.price || 0;
-        this.form.checkList = val.checkList || this.form.checkList;
+        if (this.dialogType === "edit" && Object.keys(val).length > 0) {
+          this.form = { ...val };
+        }
         this.setCheckList(this.form.checkList);
       },
       deep: true,
@@ -123,21 +123,6 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.setStepIndex(this.stepIndex + 1);
-          const { name, type } = this.form;
-          let result = this.originData.filter(
-            (item) => item.name === name && item.type === type
-          );
-          if (result.length > 0) {
-            this.$message({
-              message: `类型${this.form.name}已存在`,
-              type: "warning",
-            });
-            return;
-          }
-          this.$message({
-            message: `类型${this.form.name}保存成功`,
-            type: "success",
-          });
           this.setCheckList(this.form.checkList);
           this.setFormInfo({ ...this.form });
         } else {
@@ -146,15 +131,15 @@ export default {
         }
       });
     },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
+    resetForm() {
+      this.form.name = "";
+      this.form.price = "";
+      this.form.checkList = [];
       this.$emit("handleClose");
     },
     getCurrentData() {
       let key = this.$route.params.id;
-      let currentData = this.getLocalData(key, {
-        originData: [],
-      });
+      let currentData = this.getLocalData(key);
       return currentData;
     },
   },
@@ -162,10 +147,9 @@ export default {
   created() {
     this.currentData = this.getCurrentData();
     this.originData = this.currentData.originData;
-    console.log("step1 origin = ", this.originData);
-    this.form.name = this.currentForm.name || this.form.name;
-    this.form.price = this.currentForm.price || this.form.price;
-    this.form.checkList = this.currentForm.checkList || this.form.checkList;
+    if (this.dialogType === "edit") {
+      this.form = { ...this.currentForm };
+    }
     this.setCheckList(this.form.checkList);
   },
 };
