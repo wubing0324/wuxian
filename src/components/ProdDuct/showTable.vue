@@ -11,7 +11,11 @@
         v-for="(column, index) in getTitle()"
         :key="column + index"
       >
-        <el-table-column :label="getSubTitle(index, tableData[0].length)">
+        <el-table-column
+          :label="
+            getSubTitle(index, tableData.length > 0 ? tableData[0].length : 0)
+          "
+        >
           <template slot-scope="scope">
             <div v-if="isArray(scope.row[index])">
               <span class="ruku">{{ scope.row[index][0] }}</span>

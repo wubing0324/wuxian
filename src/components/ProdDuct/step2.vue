@@ -14,7 +14,6 @@
         :rules="[{ required: true, message: '数量不能为空' }]"
         v-for="check in checkList"
       >
-        {{ check }}-{{ form[check] }}
         <el-input
           type="text"
           v-model="form[check]"
@@ -89,6 +88,7 @@ export default {
           this.$refs[formName].resetFields();
           this.$emit("handleClose");
           console.log("this.recipes = ", this.recipes);
+          this.setRecipesToLocal();
         } else {
           console.log("error submit!!");
           return false;
@@ -107,12 +107,23 @@ export default {
       });
       return currentData;
     },
+    setRecipesToLocal() {
+      this.currentData.recipes = this.recipes;
+      this.productsOriginData.checkList = this.checkList;
+      let key = this.$route.params.id;
+      localStorage.setItem(key, JSON.stringify(this.currentData));
+    },
   },
   mounted() {},
   created() {
     this.currentData = this.getCurrentData();
     this.productsOriginData = this.currentData.productsOriginData;
     this.productsDate = this.currentData.productsDate;
+    if (!this.currentData.recipes) {
+      this.setRecipesToLocal();
+    } else {
+      this.recipes = this.currentData.recipes;
+    }
   },
 };
 </script>

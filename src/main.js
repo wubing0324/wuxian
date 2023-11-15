@@ -8,11 +8,19 @@ import "./utils/rem.js";
 Vue.use(ElementUI);
 Vue.config.productionTip = false;
 
-function getLocalData(key, typeData) {
+function getLocalData(key) {
   let data = localStorage.getItem(key);
-  data = data ? JSON.parse(data) : typeData;
+  data = data ? JSON.parse(data) : [];
   if (data.length === 0) {
-    localStorage.setItem(key, JSON.stringify(typeData));
+    let tmp = {
+      originData: [],
+      date: {},
+      recipes: {},
+      productsDate: {},
+      productsOriginData: [],
+      assetTypeData: [],
+    };
+    localStorage.setItem(key, JSON.stringify(tmp));
   }
   return data;
 }

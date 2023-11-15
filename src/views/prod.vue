@@ -67,9 +67,11 @@ export default {
   },
   data() {
     return {
+      date: {},
       productsDate: {},
       productsOriginData: [],
       currentData: {},
+      recipes: {},
       rules: {
         name: [{ required: true, message: "请输入名称", trigger: "blur" }],
         price: [{ required: true, message: "请输入单价", trigger: "blur" }],
@@ -103,12 +105,35 @@ export default {
       this.$router.push({ path: `/wuliao/${type}` });
     },
     saveTableCell({ sold, name, time, allPrice }) {
+      Object.keys(this.recipes[name]).forEach((assetsName) => {
+        let shengyu = this.date[time][assetsName][1];
+        this.date[time][assetsName][1] =
+          shengyu - sold * this.recipes[name][assetsName];
+        Object.keys(this.date).forEach((time1) => {
+          if (moment(time1).isAfter(moment(time))) {
+            let shengyu2 = this.date[time1][assetsName][1];
+            this.date[time1][assetsName][1] =
+              shengyu2 - sold * this.recipes[name][assetsName];
+          }
+        });
+      });
+      this.currentData.date = this.date;
       this.productsDate[time][name] = [sold, allPrice];
-      debugger;
       this.currentData.productsDate = this.productsDate;
       let key = this.$route.params.id;
       localStorage.setItem(key, JSON.stringify(this.currentData));
       this.$refs["showtable"].generateTable();
+    },
+    checkAssets() {
+      this.$confirm("食材种类为空,不能添加食材", "提示", {
+        confirmButtonText: "去添加食材种类",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.$refs.AssetType.showDialog();
+        })
+        .catch(() => {});
     },
     cellDblClick({ column, selectedData, row, weeks }) {
       if (column.index === row.length - 1) {
@@ -191,10 +216,7 @@ export default {
     },
     getCurrentData() {
       let key = this.$route.params.id;
-      let currentData = this.getLocalData(key, {
-        productsDate: {},
-        productsOriginData: [],
-      });
+      let currentData = this.getLocalData(key);
       return currentData;
     },
     generateWeeks() {
@@ -231,8 +253,11 @@ export default {
   },
   created() {
     this.currentData = this.getCurrentData();
-    this.productsOriginData = this.currentData.productsOriginData;
-    this.productsDate = this.currentData.productsDate;
+    this.productsOriginData =
+      this.currentData.productsOriginData || this.productsOriginData;
+    this.productsDate = this.currentData.productsDate || this.productsDate;
+    this.recipes = this.currentData.recipes;
+    this.date = this.currentData.date;
   },
   mounted() {},
 };
