@@ -1,11 +1,11 @@
 <template>
   <div class="home">
-    <nav class="daohang">
+    <!-- <nav class="daohang">
       <router-link class="daohang" to="/wuliao/coffee">咖啡</router-link> |
       <router-link class="daohang" to="/wuliao/branch">菜品</router-link> |
       <router-link class="daohang" to="/wuliao/cake">蛋糕</router-link> |
       <router-link class="daohang" to="/shicai/branch">食材</router-link>
-    </nav>
+    </nav> -->
     <div class="menu-container">
       <el-card
         class="menu-item"
@@ -62,7 +62,7 @@ export default {
 .menu-container {
   display: flex;
   width: 800px;
-  margin: 0 auto;
+  margin: 180px auto;
   justify-content: space-between;
   .menu-item {
     width: 240px;
