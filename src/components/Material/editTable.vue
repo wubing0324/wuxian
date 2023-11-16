@@ -26,14 +26,14 @@
           <p>{{ type }}</p>
           <div class="part-asset">
             <el-form-item
-              :label="`(${oldFormCopy[data.name]})-${data.name}`"
-              :title="data.name"
-              :prop="data.name"
               v-for="data in getDataByType(type)"
-              :key="data.name"
+              :label="`(${oldFormCopy[data.id]})-${data.name}`"
+              :title="data.name"
+              :prop="data.id + ''"
+              :key="data.id + data.type"
               :rules="[{ required: true, message: '不能为空' }]"
             >
-              <el-input-number v-model="form[data.name]"></el-input-number>
+              <el-input-number v-model="form[data.id]"></el-input-number>
             </el-form-item>
             <el-form-item
               v-for="i in 10"
@@ -64,6 +64,7 @@ export default {
   components: {},
   data() {
     return {
+      assetRules: [],
       now: moment().format("YYYY/MM/DD"),
       pickerOptions: {
         disabledDate(time) {
@@ -127,14 +128,34 @@ export default {
             moment(time).isAfter(moment(this.now))
           );
           console.log("afters = ", afters);
-          Object.keys(this.form).forEach((name) => {
+          Object.keys(this.form).forEach((id) => {
             // this.date[this.now][name][0] = Number(this.form[name]);
-            this.date[this.now][name][0] = Number(this.oldFormCopy[name]);
-            this.date[this.now][name][1] =
-              Number(this.form[name]) + this.date[this.now][name][1];
+            this.date[this.now][id][0] = Number(this.oldFormCopy[id]);
+            this.date[this.now][id][1] =
+              Number(this.form[id]) + this.date[this.now][id][1];
+            console.log("this.form[id] = ", this.form[id]);
+            if (this.form[id] < 0) {
+              let result = this.assetRules.find((data) => {
+                return data.decrease[1] + "" === id + "";
+              });
+              console.log("result = ", result);
+              if (result) {
+                let addNum = this.date[this.now][result.increase[1]];
+                this.date[this.now][result.increase[1]][0] =
+                  Number(addNum[0]) - Number(this.form[id]);
+                this.date[this.now][result.increase[1]][1] =
+                  Number(addNum[1]) - Number(this.form[id]);
+                afters.forEach((after) => {
+                  let addNum = this.date[after][result.increase[1]];
+                  this.date[after][result.increase[1]][1] =
+                    Number(addNum[1]) - Number(this.form[id]);
+                });
+              }
+              // 当前食材减少后，根据规则找到对应需要增加的食材
+            }
             afters.forEach((after) => {
-              this.date[after][name][1] =
-                Number(this.form[name]) + this.date[after][name][1];
+              this.date[after][id][1] =
+                Number(this.form[id]) + this.date[after][id][1];
             });
           });
           this.setDate();
@@ -149,8 +170,10 @@ export default {
       this.$refs[formName].resetFields();
       this.dialogVisible = false;
     },
-    showDialog(data) {
-      console.log("editdata =", data);
+    showDialog() {
+      this.currentData = this.getCurrentData();
+      this.date = this.currentData.date;
+      this.assetRules = this.currentData.assetRules;
       this.getFormInfoByTime();
       this.dialogVisible = true;
     },
@@ -163,16 +186,16 @@ export default {
       if (!this.date[this.now]) {
         this.date[this.now] = {};
         this.originData.forEach((item) => {
-          this.date[this.now][item.name] = [0, 0];
+          this.date[this.now][item.id] = [0, 0];
         });
       }
-      Object.keys(this.date[this.now]).forEach((name) => {
+      Object.keys(this.date[this.now]).forEach((id) => {
         if (
           this.date[this.now] &&
-          Object.prototype.hasOwnProperty.call(this.date[this.now], name)
+          Object.prototype.hasOwnProperty.call(this.date[this.now], id)
         ) {
-          this.$set(this.oldForm, name, this.date[this.now][name][0]);
-          this.$set(this.form, name, 0);
+          this.$set(this.oldForm, id, this.date[this.now][id][0]);
+          this.$set(this.form, id, 0);
         }
       });
     },
@@ -186,6 +209,7 @@ export default {
   created() {
     this.currentData = this.getCurrentData();
     this.date = this.currentData.date;
+    this.assetRules = this.currentData.assetRules;
     this.getFormInfoByTime();
   },
 };

@@ -19,6 +19,12 @@ function getLocalData(key) {
       productsDate: {},
       productsOriginData: [],
       assetTypeData: [],
+      assetRules: [
+        {
+          decrease: "",
+          increase: "",
+        },
+      ],
     };
     localStorage.setItem(key, JSON.stringify(tmp));
   }

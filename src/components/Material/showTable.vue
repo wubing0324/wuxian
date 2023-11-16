@@ -173,16 +173,17 @@ export default {
       console.log("this.date = ", this.date);
       this.tableData = matrixData.map((data, index) =>
         data.map((col, i) => {
-          let name = columns[index][i].name;
+          let id = columns[index][i].id;
           return [
             this.getFormatName(columns[index][i].name, columns[index][i].unit),
             ...this.weeks.map((key) => {
-              return this.date[key][name];
+              return this.date[key][id];
             }),
             columns[index][i].count,
           ];
         })
       );
+      console.log("tabledata =- =====", this.tableData);
     },
   },
   mounted() {},

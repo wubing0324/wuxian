@@ -4,18 +4,15 @@
     <showTable
       :originData="originData"
       :date="date"
-      @cellDblClick="cellDblClick"
       ref="showtable"
     ></showTable>
     <editTable
       ref="editTable"
       @updateAssets="updateAssets"
       :originData="originData"
+      :date="date"
     ></editTable>
-    <editTableCell
-      ref="editTableCell"
-      @saveTableCell="saveTableCell"
-    ></editTableCell>
+    <createRule ref="createRule" :originData="originData"></createRule>
     <!-- 食材弹窗 -->
     <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
       <el-form
@@ -62,13 +59,14 @@
     <el-button type="primary" @click="addAssets">添加食材</el-button>
     <el-button type="success" @click="editAssets">修改食材</el-button>
     <el-button type="success" @click="addAssetType">添加种类</el-button>
+    <el-button type="success" @click="addRule">添加规则</el-button>
   </div>
 </template>
 
 <script>
 import showTable from "@/components/Material/showTable.vue";
 import editTable from "@/components/Material/editTable.vue";
-import editTableCell from "@/components/Material/editTableCell.vue";
+import createRule from "@/components/Material/createRule.vue";
 import AssetType from "@/components/AssetType.vue";
 import moment from "moment";
 
@@ -78,7 +76,7 @@ export default {
     showTable,
     AssetType,
     editTable,
-    editTableCell,
+    createRule,
   },
   data() {
     return {
@@ -121,57 +119,14 @@ export default {
       let type = this.$route.params.id;
       this.$router.push({ path: `/prod/${type}` });
     },
-    saveTableCell({ ruku, shengyu, name, time, needIncrement }) {
-      let prev = this.date[time][name];
-      if (prev[0] == ruku && prev[1] == shengyu) {
-        return;
-      } else {
-        this.date[time][name] = [ruku, shengyu];
-        this.currentData.date = this.date;
-        let key = this.$route.params.id;
-        let result = this.originData.find((item) => item.name === name);
-        console.log("result = ", result);
-        // result.count = result.count + ruku;
-        localStorage.setItem(key, JSON.stringify(this.currentData));
-        this.$refs["showtable"].generateTable();
-        Object.keys(this.date).forEach((time1) => {
-          if (moment(time1).isAfter(moment(time))) {
-            let data = this.date[time1][name];
-            data[1] = Number(data[1]) + needIncrement;
-          }
-        });
-      }
-    },
-    cellDblClick({ column, selectedData, row, weeks }) {
-      if (column.index === row.length - 1) {
-        return;
-      }
-      // console.log("column = ", column);
-      // console.log("weeks = ", weeks);
-      // console.log("选中的数据 = ", row[column.index]);
-      // console.log("对应的日期 = ", weeks[column.index - 1]);
-      // console.log("selectedData = ", selectedData);
-      let name = row[0].split(" ")[0];
-      let timeKey = weeks[column.index - 1];
-      if (column.index > 0 && column.index < row.length - 1) {
-        let data = this.date[timeKey][name];
-        this.$refs.editTableCell.showDialog({
-          ruku: data[0],
-          shengyu: data[1],
-          time: timeKey,
-          name: name,
-        });
-      } else {
-        this.$refs.editTable.showDialog({
-          form: { ...selectedData },
-        });
-      }
-    },
     editAssets() {
       this.$refs.editTable.showDialog();
     },
     addAssetType() {
       this.$refs.AssetType.showDialog();
+    },
+    addRule() {
+      this.$refs.createRule.showDialog();
     },
     deleteData(data, index) {
       data.splice(index, 1);
@@ -201,7 +156,9 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           const { name, type } = this.form;
-          let result = this.originData.filter((item) => item.name === name);
+          let result = this.originData.filter(
+            (item) => item.name === name && item.type === type
+          );
           let id = this.originData.length;
           if (result.length > 0) {
             this.$confirm(
@@ -291,21 +248,19 @@ export default {
             date[time] = {};
           }
           this.originData.forEach((item) => {
-            if (!date[time][item.name]) {
-              date[time][item.name] = [0, 0];
+            if (!date[time][item.id]) {
+              date[time][item.id] = [0, 0];
             }
           });
         }
       });
       this.currentData.date = date;
+      console.log(date);
       this.date = date;
       let key = this.$route.params.id;
       localStorage.setItem(key, JSON.stringify(this.currentData));
     },
     updateAssets(date) {
-      // Object.keys(form).forEach((key) => {
-      //   console.log(now, key, this.date[now][key]);
-      // });
       this.date = date;
       this.$refs["showtable"].generateTable();
     },
