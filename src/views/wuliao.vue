@@ -1,6 +1,13 @@
 <template>
   <div class="wuliao-container">
     <div v-show="nodata">暂无数据，请先添加数据</div>
+    <el-date-picker
+      v-model="value3"
+      type="week"
+      format="MM月 第 W 周"
+      placeholder="选择周"
+    >
+    </el-date-picker>
     <showTable
       :originData="originData"
       :date="date"
@@ -80,6 +87,7 @@ export default {
   },
   data() {
     return {
+      value3: "",
       date: {},
       originData: [],
       currentData: {},
