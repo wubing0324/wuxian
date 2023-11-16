@@ -29,18 +29,18 @@
         </el-table-column>
       </el-table-column>
     </el-table>
-    <editTable :rowName="rowName"></editTable>
+    <!-- <editTable :rowName="rowName"></editTable> -->
   </div>
 </template>
 
 <script>
 import moment from "moment";
-import editTable from "./editTable.vue";
+// import editTable from "./editTable.vue";
 
 export default {
   name: "ShowTavble",
   components: {
-    editTable,
+    // editTable,
   },
   data() {
     return {

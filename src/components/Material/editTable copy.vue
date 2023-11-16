@@ -1,35 +1,49 @@
 <template>
-  <div class="prod-step1">
-    <el-form
-      size="mini"
-      :rules="rules"
-      :model="form"
-      ref="form"
-      label-width="100px"
-      class="demo-ruleForm"
+  <div class="shicai-container">
+    <el-dialog
+      title="修改食材"
+      :visible.sync="dialogVisible"
+      custom-class="edit-table-class"
     >
-      <el-form-item label="食材名称" prop="name">
-        <el-input type="text" v-model="form.name" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item label="单位" prop="unit">
-        <el-input type="text" v-model="form.unit" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item label="食材类型" prop="type">
-        <el-select v-model="form.type" placeholder="请选择食材类型">
-          <el-option
-            v-for="item in assetTypeData"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          >
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="submitForm('form')">下一步</el-button>
-        <el-button @click="resetForm('form')">取消</el-button>
-      </el-form-item>
-    </el-form>
+      <el-form
+        size="mini"
+        :rules="rules"
+        :model="form"
+        ref="form"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="食材名称" prop="name">
+          <el-input
+            type="text"
+            v-model="form.name"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="单位" prop="unit">
+          <el-input
+            type="text"
+            v-model="form.unit"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="食材类型" prop="type">
+          <el-select v-model="form.type" placeholder="请选择食材类型">
+            <el-option
+              v-for="item in assetTypeData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('form')">保存</el-button>
+          <el-button @click="resetForm('form')">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -122,6 +136,16 @@ export default {
       this.$refs[formName].resetFields();
       this.dialogVisible = false;
     },
+    showDialog(data) {
+      console.log("editdata =", data);
+      this.dialogVisible = true;
+    },
+    handleClose() {
+      this.dialogVisible = false;
+    },
+    saveData() {
+      this.dialogVisible = false;
+    },
     getCurrentData() {
       let key = this.$route.params.id;
       let currentData = this.getLocalData(key, {
@@ -142,11 +166,49 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-.prod-step1 {
+// .edit-table-class {
+//   height: 80vh;
+// }
+.shicai-container {
+  .edit-table-class {
+    .el-dialog__header {
+      display: none;
+    }
+  }
+  .p-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .table-type {
+    font-size: 16px;
+  }
+
+  .card-box {
+    display: flex;
+    flex-wrap: wrap;
+    .shicai-card {
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+  }
   .shengyu {
     color: green;
   }
   .ruku {
+    color: red;
+  }
+  .add-card {
+    width: 178px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+}
+.test {
+  color: red;
+  .re {
     color: red;
   }
 }

@@ -7,7 +7,11 @@
       @cellDblClick="cellDblClick"
       ref="showtable"
     ></showTable>
-    <editTable ref="editTable" :originData="originData"></editTable>
+    <editTable
+      ref="editTable"
+      @updateAssets="updateAssets"
+      :originData="originData"
+    ></editTable>
     <editTableCell
       ref="editTableCell"
       @saveTableCell="saveTableCell"
@@ -197,34 +201,59 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           const { name, type } = this.form;
-          let result = this.originData.filter(
-            (item) => item.name === name && item.type === type
-          );
-          if (result.length > 0) {
-            this.$message({
-              message: `类型${this.form.name}已存在`,
-              type: "warning",
-            });
-            return;
-          }
+          let result = this.originData.filter((item) => item.name === name);
           let id = this.originData.length;
-          this.originData.push({
-            name: this.form.name.replace(/\s*/g, ""),
-            type: this.form.type,
-            unit: this.form.unit,
-            count: 0,
-            id: id,
-          });
-          this.updateDate(this.date);
-          // this.generateColumns();
-          let key = this.$route.params.id;
-          this.currentData.originData = this.originData;
-          localStorage.setItem(key, JSON.stringify(this.currentData));
-          this.$message({
-            message: `类型${this.form.name}保存成功`,
-            type: "success",
-          });
-          this.dialogVisible = false;
+          if (result.length > 0) {
+            this.$confirm(
+              `食材${this.form.name}已存在，继续添加会自动拼接食材类型在名称中`,
+              "提示",
+              {
+                confirmButtonText: "添加",
+                cancelButtonText: "取消",
+                type: "warning",
+              }
+            )
+              .then(() => {
+                this.originData.push({
+                  name: this.form.name.replace(/\s*/g, "") + `(${type})`,
+                  type: this.form.type,
+                  unit: this.form.unit,
+                  count: 0,
+                  id: id,
+                });
+                this.updateDate(this.date);
+                // this.generateColumns();
+                let key = this.$route.params.id;
+                this.currentData.originData = this.originData;
+                localStorage.setItem(key, JSON.stringify(this.currentData));
+                this.$message({
+                  message: `类型${this.form.name}保存成功`,
+                  type: "success",
+                });
+                this.dialogVisible = false;
+              })
+              .catch(() => {
+                return;
+              });
+          } else {
+            this.originData.push({
+              name: this.form.name.replace(/\s*/g, ""),
+              type: this.form.type,
+              unit: this.form.unit,
+              count: 0,
+              id: id,
+            });
+            this.updateDate(this.date);
+            // this.generateColumns();
+            let key = this.$route.params.id;
+            this.currentData.originData = this.originData;
+            localStorage.setItem(key, JSON.stringify(this.currentData));
+            this.$message({
+              message: `类型${this.form.name}保存成功`,
+              type: "success",
+            });
+            this.dialogVisible = false;
+          }
         } else {
           console.log("error submit!!");
           return false;
@@ -272,6 +301,13 @@ export default {
       this.date = date;
       let key = this.$route.params.id;
       localStorage.setItem(key, JSON.stringify(this.currentData));
+    },
+    updateAssets(date) {
+      // Object.keys(form).forEach((key) => {
+      //   console.log(now, key, this.date[now][key]);
+      // });
+      this.date = date;
+      this.$refs["showtable"].generateTable();
     },
   },
   created() {

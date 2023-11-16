@@ -1,43 +1,51 @@
 <template>
   <div class="shicai-container">
     <el-dialog
+      width="70vw"
       title="修改食材"
       :visible.sync="dialogVisible"
       custom-class="edit-table-class"
     >
+      <el-date-picker
+        v-model="now"
+        type="date"
+        :picker-options="pickerOptions"
+        placeholder="选择日期"
+        value-format="yyyy/MM/dd"
+        @change="getFormInfoByTime"
+      >
+      </el-date-picker>
       <el-form
         size="mini"
-        :rules="rules"
         :model="form"
         ref="form"
-        label-width="100px"
+        label-width="160px"
         class="demo-ruleForm"
       >
-        <el-form-item label="食材名称" prop="name">
-          <el-input
-            type="text"
-            v-model="form.name"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="单位" prop="unit">
-          <el-input
-            type="text"
-            v-model="form.unit"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="食材类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择食材类型">
-            <el-option
-              v-for="item in assetTypeData"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+        <div v-for="type in types" :key="type">
+          <p>{{ type }}</p>
+          <div class="part-asset">
+            <el-form-item
+              :label="`(${oldFormCopy[data.name]})-${data.name}`"
+              :title="data.name"
+              :prop="data.name"
+              v-for="data in getDataByType(type)"
+              :key="data.name"
+              :rules="[{ required: true, message: '不能为空' }]"
             >
-            </el-option>
-          </el-select>
-        </el-form-item>
+              <el-input-number v-model="form[data.name]"></el-input-number>
+            </el-form-item>
+            <el-form-item
+              v-for="i in 10"
+              style="
+                 {
+                  height: 0;
+                }
+              "
+              :key="i"
+            ></el-form-item>
+          </div>
+        </div>
         <el-form-item>
           <el-button type="primary" @click="submitForm('form')">保存</el-button>
           <el-button @click="resetForm('form')">取消</el-button>
@@ -49,24 +57,23 @@
 
 <script>
 import moment from "moment";
+import { mapState } from "vuex";
 
 export default {
   name: "EditTable",
   components: {},
   data() {
     return {
-      assetTypeData: [],
+      now: moment().format("YYYY/MM/DD"),
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      list: [],
       dialogVisible: false,
-      rules: {
-        name: [{ required: true, message: "请输入名称", trigger: "blur" }],
-        unit: [{ required: true, message: "请输入单位", trigger: "blur" }],
-        type: [{ required: true, message: "请选择类型", trigger: "change" }],
-      },
-      form: {
-        name: "",
-        unit: "",
-        type: "",
-      },
+      form: {},
+      oldForm: {},
     };
   },
   props: {
@@ -77,13 +84,20 @@ export default {
     },
   },
   computed: {
-    // title() {
-    //   const { time, name } = this.form;
-    //   let week = this.getWeek(time);
-    //   return name + " " + time + " " + week;
-    // },
+    ...mapState(["types"]),
+    oldFormCopy() {
+      let form = {};
+      Object.keys(this.oldForm).forEach((name) => {
+        form[name] = this.oldForm[name] + this.form[name];
+      });
+      return form;
+    },
   },
+  watch: {},
   methods: {
+    getDataByType(type) {
+      return this.originData.filter((data) => data.type === type);
+    },
     getWeek(date) {
       // 参数时间戳
       let week = moment(date).day();
@@ -107,25 +121,24 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          const { name, type } = this.form;
-          let result = this.originData.filter(
-            (item) => item.name === name && item.type === type
-          );
-          if (result.length > 0) {
-            this.$message({
-              message: `类型${this.form.name}已存在`,
-              type: "warning",
-            });
-            return;
-          }
-          // this.generateColumns();
-          this.generateTable();
-          // localStorage.setItem("originData", JSON.stringify(this.originData));
-          this.$message({
-            message: `类型${this.form.name}保存成功`,
-            type: "success",
-          });
           this.dialogVisible = false;
+          // 找出今天以后的日期，更新剩余数量
+          let afters = Object.keys(this.date).filter((time) =>
+            moment(time).isAfter(moment(this.now))
+          );
+          console.log("afters = ", afters);
+          Object.keys(this.form).forEach((name) => {
+            // this.date[this.now][name][0] = Number(this.form[name]);
+            this.date[this.now][name][0] = Number(this.oldFormCopy[name]);
+            this.date[this.now][name][1] =
+              Number(this.form[name]) + this.date[this.now][name][1];
+            afters.forEach((after) => {
+              this.date[after][name][1] =
+                Number(this.form[name]) + this.date[after][name][1];
+            });
+          });
+          this.setDate();
+          this.$emit("updateAssets", this.date);
         } else {
           console.log("error submit!!");
           return false;
@@ -138,28 +151,42 @@ export default {
     },
     showDialog(data) {
       console.log("editdata =", data);
+      this.getFormInfoByTime();
       this.dialogVisible = true;
-    },
-    handleClose() {
-      this.dialogVisible = false;
-    },
-    saveData() {
-      this.dialogVisible = false;
     },
     getCurrentData() {
       let key = this.$route.params.id;
-      let currentData = this.getLocalData(key, {
-        originData: [],
-        date: {},
-        assetTypeData: [],
-      });
+      let currentData = this.getLocalData(key);
       return currentData;
+    },
+    getFormInfoByTime() {
+      if (!this.date[this.now]) {
+        this.date[this.now] = {};
+        this.originData.forEach((item) => {
+          this.date[this.now][item.name] = [0, 0];
+        });
+      }
+      Object.keys(this.date[this.now]).forEach((name) => {
+        if (
+          this.date[this.now] &&
+          Object.prototype.hasOwnProperty.call(this.date[this.now], name)
+        ) {
+          this.$set(this.oldForm, name, this.date[this.now][name][0]);
+          this.$set(this.form, name, 0);
+        }
+      });
+    },
+    setDate() {
+      this.currentData.date = this.date;
+      let key = this.$route.params.id;
+      localStorage.setItem(key, JSON.stringify(this.currentData));
     },
   },
   mounted() {},
   created() {
     this.currentData = this.getCurrentData();
-    this.assetTypeData = this.currentData.assetTypeData;
+    this.date = this.currentData.date;
+    this.getFormInfoByTime();
   },
 };
 </script>
@@ -173,6 +200,21 @@ export default {
   .edit-table-class {
     .el-dialog__header {
       display: none;
+    }
+    .part-asset {
+      width: 86%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      .el-form-item__content {
+        width: 70px;
+      }
+      .el-form-item__label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
   .p-title {

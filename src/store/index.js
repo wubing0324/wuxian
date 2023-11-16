@@ -8,6 +8,7 @@ export default new Vuex.Store({
     stepIndex: 1,
     checkList: [],
     formInfo: {},
+    types: [],
   },
   getters: {},
   mutations: {
@@ -19,6 +20,9 @@ export default new Vuex.Store({
     },
     setFormInfo(state, form) {
       state.formInfo = form;
+    },
+    setAssetTypes(state, types) {
+      state.types = types;
     },
   },
   actions: {},

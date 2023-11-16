@@ -28,18 +28,19 @@
         </el-table-column>
       </el-table>
     </div>
-    <editTable :rowName="rowName"></editTable>
+    <!-- <editTable :rowName="rowName"></editTable> -->
   </div>
 </template>
 
 <script>
 import moment from "moment";
-import editTable from "./editTable.vue";
+// import editTable from "./editTable.vue";
+import { mapMutations } from "vuex";
 
 export default {
   name: "HelloWorld",
   components: {
-    editTable,
+    // editTable,
   },
   data() {
     return {
@@ -83,6 +84,7 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(["setAssetTypes"]),
     getFormatName(prev, next) {
       return `${prev} (${next})`;
     },
@@ -155,6 +157,7 @@ export default {
     generateTable() {
       let types = new Set(this.originData.map((item) => item.type));
       this.types = types = [...types];
+      this.setAssetTypes([...types]);
       let columns = types.map((type) => {
         return this.originData.filter((item) => item.type === type);
       });
