@@ -1,7 +1,7 @@
 <template>
   <div class="shicai-container">
     <el-dialog
-      width="70vw"
+      width="20vw"
       title="修改食材"
       :visible.sync="dialogVisible"
       custom-class="edit-table-class"
@@ -135,6 +135,12 @@ export default {
         // 修改当前入库量
         this.date[this.now][result.increase[1]][0] =
           Number(addNum[0]) - Number(this.form[id]);
+        if (
+          Object.prototype.hasOwnProperty.call(this.oldForm, result.decrease[1])
+        ) {
+          this.oldForm[result.decrease[1]] =
+            this.date[this.now][result.decrease[1]][0];
+        }
         afters.forEach((after) => {
           // 修改当前时间以及之后的所有剩余量
           let addNum1 = this.date[after][result.increase[1]];
@@ -155,10 +161,25 @@ export default {
         return data.increase[1] + "" === id + "";
       });
       if (result) {
+        console.log(
+          "object.hasownpro = ",
+          Object.prototype.hasOwnProperty.call(
+            this.oldForm,
+            result.decrease[1]
+          ),
+          this.oldForm,
+          result.decrease[1]
+        );
         let addNum = this.date[this.now][result.decrease[1]];
         // 修改当前入库量
         this.date[this.now][result.decrease[1]][0] =
           Number(addNum[0]) - Number(this.form[id]);
+        if (
+          Object.prototype.hasOwnProperty.call(this.oldForm, result.decrease[1])
+        ) {
+          this.oldForm[result.decrease[1]] =
+            this.date[this.now][result.decrease[1]][0];
+        }
         afters.forEach((after) => {
           // 修改当前时间以及之后的所有剩余量
           let addNum1 = this.date[after][result.decrease[1]];
@@ -166,6 +187,7 @@ export default {
             Number(addNum1[1]) - Number(this.form[id]);
         });
       }
+      debugger;
       return result;
     },
     submitForm(formName) {
