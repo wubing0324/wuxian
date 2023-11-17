@@ -1,5 +1,18 @@
 <template>
   <div class="shicai-container">
+    <div class="switch-week">
+      {{ weekData }}
+      <el-date-picker
+        v-model="weekData"
+        type="week"
+        format="MM月 第 W 周"
+        placeholder="选择周"
+        :picker-options="pickerOptions"
+        value-format="yyyy/MM/dd"
+        @change="changeWeek"
+      >
+      </el-date-picker>
+    </div>
     <div v-for="(data, ids) in tableData" :key="types[ids]">
       <p class="table-type">{{ types[ids] }}</p>
       <el-table
@@ -10,7 +23,7 @@
       >
         <el-table-column
           :label="column"
-          v-for="(column, index) in getTitle(ids)"
+          v-for="(column, index) in transTitle"
           :key="column + index"
         >
           <el-table-column :label="getSubTitle(index, data[0].length)">
@@ -38,12 +51,19 @@ import moment from "moment";
 import { mapMutations } from "vuex";
 
 export default {
-  name: "HelloWorld",
+  name: "ShowTable",
   components: {
     // editTable,
   },
   data() {
     return {
+      pickerOptions: {
+        firstDayOfWeek: 1,
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      weekData: "",
       rowName: "",
       types: [],
       columns: [],
@@ -80,11 +100,15 @@ export default {
   },
   computed: {
     transTitle() {
-      return ["", ...this.weeks, ""];
+      let weeks = this.weeks.map((time) => `${time} ${this.getWeek(time)}`);
+      return ["", ...weeks, ""];
     },
   },
   methods: {
     ...mapMutations(["setAssetTypes"]),
+    changeWeek(val) {
+      this.weeks = this.generateWeeks(val);
+    },
     getFormatName(prev, next) {
       return `${prev} (${next})`;
     },
@@ -115,6 +139,26 @@ export default {
     isArray(arr) {
       return Object.prototype.toString.call(arr) === "[object Array]";
     },
+    getWeek(date) {
+      // 参数时间戳
+      let week = moment(date).day();
+      switch (week) {
+        case 1:
+          return "周一";
+        case 2:
+          return "周二";
+        case 3:
+          return "周三";
+        case 4:
+          return "周四";
+        case 5:
+          return "周五";
+        case 6:
+          return "周六";
+        case 0:
+          return "周日";
+      }
+    },
     getTitle(index) {
       let mapWeek = {
         1: "周一",
@@ -142,10 +186,10 @@ export default {
 
       return title;
     },
-    generateWeeks() {
+    generateWeeks(val) {
       let weeks = [];
-      let weekOfday = moment().format("E"); //计算今天是这周第几天
-      let last_monday = moment()
+      let weekOfday = val ? moment(val).format("E") : moment().format("E"); //计算今天是这周第几天
+      let last_monday = (val ? moment(val) : moment())
         .startOf()
         .subtract(weekOfday - 1, "days")
         .format("YYYY/MM/DD"); //周一日期
@@ -200,6 +244,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .shicai-container {
+  .switch-week {
+    font-size: 16px;
+  }
   .p-title {
     font-size: 18px;
     font-weight: 500;
