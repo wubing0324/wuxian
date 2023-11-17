@@ -33,7 +33,10 @@
               :key="data.id + data.type"
               :rules="[{ required: true, message: '不能为空' }]"
             >
-              <el-input-number v-model="form[data.id]"></el-input-number>
+              <el-input-number
+                v-model="form[data.id]"
+                :disabled="disables.includes(data.type)"
+              ></el-input-number>
             </el-form-item>
             <el-form-item
               v-for="i in 10"
@@ -75,6 +78,7 @@ export default {
       dialogVisible: false,
       form: {},
       oldForm: {},
+      disables: [],
     };
   },
   props: {
@@ -209,12 +213,13 @@ export default {
             // 数量减少且减少的食材在assetRules属于decrease，说明有对应需要增加的食材关系，找到需要增加的食材并更新
             if (this.form[id] < 0) {
               this.getDecreaseById(this.assetRules, id, afters);
-            } else if (this.form[id] > 0) {
-              this.getIncreaseById(this.assetRules, id, afters);
             }
+            // else if (this.form[id] > 0) {
+            //   this.getIncreaseById(this.assetRules, id, afters);
+            // }
           });
-          // this.setDate();
-          // this.$emit("updateAssets", this.date);
+          this.setDate();
+          this.$emit("updateAssets", this.date);
         } else {
           console.log("error submit!!");
           return false;
@@ -229,6 +234,7 @@ export default {
       this.currentData = this.getCurrentData();
       this.date = this.currentData.date;
       this.assetRules = this.currentData.assetRules;
+      this.disables = this.assetRules.map((data) => data.increase[0]);
       this.getFormInfoByTime();
       this.dialogVisible = true;
     },
