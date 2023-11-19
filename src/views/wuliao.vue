@@ -35,7 +35,7 @@
         :rules="rules"
         :model="form"
         ref="form"
-        label-width="100px"
+        label-width="160px"
         class="demo-ruleForm"
       >
         <el-form-item label="食材名称" prop="name">
@@ -52,7 +52,7 @@
             autocomplete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item label="活动区域" prop="type">
+        <el-form-item label="食材种类" prop="type">
           <el-select v-model="form.type" placeholder="请选择">
             <el-option
               v-for="item in assetTypeData"
@@ -234,36 +234,11 @@ export default {
           );
           let id = this.originData.length;
           if (result.length > 0) {
-            this.$confirm(
-              `食材${this.form.name}已存在，继续添加会自动拼接食材类型在名称中`,
-              "提示",
-              {
-                confirmButtonText: "添加",
-                cancelButtonText: "取消",
-                type: "warning",
-              }
-            )
-              .then(() => {
-                this.originData.push({
-                  name: this.form.name.replace(/\s*/g, "") + `(${type})`,
-                  type: this.form.type,
-                  unit: this.form.unit,
-                  count: 0,
-                  id: id,
-                });
-                this.updateDate2(this.date);
-                let key = this.$route.params.id;
-                this.currentData.originData = this.originData;
-                this.setLocalData(key, "originData", this.originData);
-                this.$message({
-                  message: `类型${this.form.name}保存成功`,
-                  type: "success",
-                });
-                this.dialogVisible = false;
-              })
-              .catch(() => {
-                return;
-              });
+            this.$message({
+              message: `${this.form.name}已存在`,
+              type: "warning",
+            });
+            return;
           } else {
             this.originData.push({
               name: this.form.name.replace(/\s*/g, ""),
@@ -341,6 +316,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+.wuliao-container {
+  .el-select {
+    width: 100%;
+  }
+}
 .all-card-boxs {
   .p-title {
     font-size: 18px;

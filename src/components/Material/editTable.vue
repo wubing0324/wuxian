@@ -1,7 +1,7 @@
 <template>
   <div class="shicai-container">
     <el-dialog
-      width="20vw"
+      width="50vw"
       title="修改食材"
       :visible.sync="dialogVisible"
       custom-class="edit-table-class"
@@ -37,6 +37,11 @@
                 v-model="form[data.id]"
                 :disabled="disables.includes(data.type)"
               ></el-input-number>
+              <el-checkbox
+                v-model="checkGroup[data.id]"
+                v-show="getShowCheck(data.id)"
+                >{{ direction[data.id] }}</el-checkbox
+              >
             </el-form-item>
             <el-form-item
               v-for="i in 10"
@@ -67,6 +72,7 @@ export default {
   components: {},
   data() {
     return {
+      checkGroup: {},
       assetRules: [],
       now: moment().format("YYYY/MM/DD"),
       pickerOptions: {
@@ -78,6 +84,7 @@ export default {
       dialogVisible: false,
       form: {},
       oldForm: {},
+      direction: {},
       disables: [],
     };
   },
@@ -116,6 +123,9 @@ export default {
     },
   },
   methods: {
+    getShowCheck(id) {
+      return Object.prototype.hasOwnProperty.call(this.checkGroup, id);
+    },
     getDataByType(type) {
       return this.originData.filter((data) => data.type === type);
     },
@@ -155,12 +165,6 @@ export default {
         // 修改当前入库量
         this.date[this.now][result.increase[1]][0] =
           Number(addNum[0]) - Number(this.form[id]);
-        // if (
-        //   Object.prototype.hasOwnProperty.call(this.oldForm, result.decrease[1])
-        // ) {
-        //   this.oldForm[result.decrease[1]] =
-        //     this.date[this.now][result.decrease[1]][0];
-        // }
         afters.forEach((after) => {
           // 修改当前时间以及之后的所有剩余量
           let addNum1 = this.date[after][result.increase[1]];
@@ -215,18 +219,16 @@ export default {
             // this.form[id]为0 说明没有被修改过，预处理中的内容是无法修改的，只能通过处理和售出产品变化
             if (this.form[id] + "" === "0") return;
             // this.date[this.now][name][0] = Number(this.form[name]);
-            this.date[this.now][id][0] = Number(this.oldFormCopy[id]);
+            // 数量减少且减少的食材在assetRules属于decrease，说明有对应需要增加的食材关系，找到需要增加的食材并更新
+            if (this.form[id] < 0 && this.checkGroup[id]) {
+              this.getDecreaseById(this.assetRules, id, afters);
+            } else {
+              this.date[this.now][id][0] = Number(this.oldFormCopy[id]);
+            }
             afters.forEach((after) => {
               this.date[after][id][1] =
                 Number(this.form[id]) + this.date[after][id][1];
             });
-            // 数量减少且减少的食材在assetRules属于decrease，说明有对应需要增加的食材关系，找到需要增加的食材并更新
-            if (this.form[id] < 0) {
-              this.getDecreaseById(this.assetRules, id, afters);
-            }
-            // else if (this.form[id] > 0) {
-            //   this.getIncreaseById(this.assetRules, id, afters);
-            // }
           });
           this.setDate();
           this.$emit("updateAssets", this.date);
@@ -244,6 +246,14 @@ export default {
       this.currentData = this.getCurrentData();
       this.date = this.currentData.date;
       this.assetRules = this.currentData.assetRules;
+      // {decrease: ["冷冻", 0], increase: ["解冻", 1]}
+      // {decrease: ["冷冻", 0], increase: ["解冻", 1]}
+      this.assetRules = this.currentData.assetRules;
+      this.assetRules.forEach((data) => {
+        this.direction[data.decrease[1]] = data.increase[0];
+        // this.checkGroup[data.decrease[1]] = false;
+        this.$set(this.checkGroup, data.decrease[1], false);
+      });
       this.disables = this.assetRules.map((data) => data.increase[0]);
       this.getFormInfoByTime();
       this.dialogVisible = true;

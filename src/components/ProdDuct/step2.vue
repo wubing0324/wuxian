@@ -4,7 +4,7 @@
       size="mini"
       :model="form"
       ref="form"
-      label-width="100px"
+      label-width="300px"
       class="demo-ruleForm"
     >
       <el-form-item
@@ -94,16 +94,6 @@ export default {
             });
             this.$emit("handleClose");
           } else {
-            let result = this.productsOriginData.filter(
-              (item) => item.id === this.formInfo.id
-            );
-            if (result.length > 0) {
-              this.$message({
-                message: `类型${this.formInfo.name}已存在`,
-                type: "warning",
-              });
-              return;
-            }
             this.$emit("updateProd", {
               type: this.dialogType,
               checkList: this.checkList,

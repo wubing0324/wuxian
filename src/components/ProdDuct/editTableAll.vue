@@ -19,7 +19,7 @@
         size="mini"
         :model="form"
         ref="form"
-        label-width="160px"
+        label-width="300px"
         class="demo-ruleForm"
       >
         <div class="part-asset">
@@ -134,68 +134,6 @@ export default {
           return "周日";
       }
     },
-    /**
-     * @name wubing
-     * @Date 2023-11-17 11:19:01
-     * @description 通过食材id查找这个食材属不属于decrease,属于的话说明这个食材的减少需要影响规则中对应食材的增量
-     * @param {参数类型} 参数 参数说明
-     * @return {返回类型说明} 当前食材在规则中的对应关系
-     */
-    getDecreaseById(assetRules, id, afters) {
-      let result = assetRules.find((data) => {
-        return data.decrease[1] + "" === id + "";
-      });
-      if (result) {
-        let addNum = this.date[this.now][result.increase[1]];
-        // 修改当前入库量
-        this.date[this.now][result.increase[1]][0] =
-          Number(addNum[0]) - Number(this.form[id]);
-        // if (
-        //   Object.prototype.hasOwnProperty.call(this.oldForm, result.decrease[1])
-        // ) {
-        //   this.oldForm[result.decrease[1]] =
-        //     this.date[this.now][result.decrease[1]][0];
-        // }
-        afters.forEach((after) => {
-          // 修改当前时间以及之后的所有剩余量
-          let addNum1 = this.date[after][result.increase[1]];
-          this.date[after][result.increase[1]][1] =
-            Number(addNum1[1]) - Number(this.form[id]);
-        });
-      }
-    },
-    /**
-     * @name wubing
-     * @Date 2023-11-17 11:19:01
-     * @description 通过食材id查找这个食材属不属于increase,属于的话说明这个食材的增加需要影响规则中对应食材的减少
-     * @param {参数类型} 参数 参数说明
-     * @return {返回类型说明} 当前食材在规则中的对应关系
-     */
-    getIncreaseById(assetRules, id, afters) {
-      let result = assetRules.find((data) => {
-        return data.increase[1] + "" === id + "";
-      });
-      if (result) {
-        let addNum = this.date[this.now][result.decrease[1]];
-        // 修改当前入库量
-        this.date[this.now][result.decrease[1]][0] =
-          Number(addNum[0]) - Number(this.form[id]);
-        if (
-          Object.prototype.hasOwnProperty.call(this.oldForm, result.decrease[1])
-        ) {
-          this.oldForm[result.decrease[1]] =
-            this.date[this.now][result.decrease[1]][0];
-        }
-        afters.forEach((after) => {
-          // 修改当前时间以及之后的所有剩余量
-          let addNum1 = this.date[after][result.decrease[1]];
-          this.date[after][result.decrease[1]][1] =
-            Number(addNum1[1]) - Number(this.form[id]);
-        });
-      }
-      debugger;
-      return result;
-    },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -209,6 +147,7 @@ export default {
           let soldInfo = Object.keys(this.form).map((id) => {
             return {
               id,
+              solding: Number(this.form[id]),
               sold: Number(this.oldFormCopy[id]),
               time: this.now,
               allPrice: this.priceMap[id] * Number(this.oldFormCopy[id]),

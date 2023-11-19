@@ -16,7 +16,7 @@
         <el-row v-for="(domain, index) in dyForm.assetRules" :key="domain.key">
           <el-col :span="6">
             <el-form-item
-              :label="'减少' + index"
+              label="减少"
               :prop="'assetRules.' + index + '.decrease'"
               :rules="{
                 required: true,
@@ -36,7 +36,7 @@
           </el-col>
           <el-col :span="6">
             <el-form-item
-              :label="'增加' + index"
+              label="增加"
               :prop="'assetRules.' + index + '.increase'"
               :rules="{
                 required: true,

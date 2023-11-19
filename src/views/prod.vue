@@ -17,16 +17,17 @@
       :date="productsDate"
       :originData="productsOriginData"
       @cellDblClick="cellDblClick"
+      :weeks="weeks"
       ref="showtable"
     ></showTable>
-    <editTable2
-      ref="editTable2"
+    <editTable-all
+      ref="editTableAll"
       @updateAssets="updateAssets"
       :originData="productsOriginData"
       :date="date"
       :nowFromProps="weekData"
       @nowChange="changeWeek"
-    ></editTable2>
+    ></editTable-all>
     <editTable
       ref="editTable"
       @updateProd="updateProd"
@@ -66,10 +67,8 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-    <addProduct ref="addProduct"></addProduct>
     <el-button type="primary" @click="goWuliao">食材界面</el-button>
     <el-button type="primary" @click="addAssets">添加产品</el-button>
-    <!-- <el-button type="primary" @click="addAssets2">添加产品22</el-button> -->
     <el-button type="success" @click="editAssets">修改产品</el-button>
   </div>
 </template>
@@ -77,8 +76,7 @@
 <script>
 import showTable from "@/components/ProdDuct/showTable.vue";
 import editTable from "@/components/ProdDuct/editTable.vue";
-import editTable2 from "@/components/ProdDuct/editTable2.vue";
-import addProduct from "@/components/ProdDuct/addProduct.vue";
+import editTableAll from "@/components/ProdDuct/editTableAll.vue";
 import editTableCell from "@/components/ProdDuct/editTableCell.vue";
 import moment from "moment";
 
@@ -88,8 +86,7 @@ export default {
     showTable,
     editTable,
     editTableCell,
-    addProduct,
-    editTable2,
+    editTableAll,
   },
   data() {
     return {
@@ -183,8 +180,9 @@ export default {
       }
       return weeks;
     },
-    goWuliao(type) {
-      this.$router.push({ path: `/wuliao/${type}` });
+    goWuliao() {
+      let key = this.$route.params.id;
+      this.$router.push({ path: `/wuliao/${key}` });
     },
     updateAssets(soldInfos) {
       soldInfos.forEach((info) => {
@@ -197,18 +195,17 @@ export default {
       this.setLocalData(key, "date", this.date);
       this.$refs["showtable"].generateTable();
     },
-    caculate({ id, sold, time, allPrice }) {
+    caculate({ id, sold, time, allPrice, solding }) {
       // 根据产品找出对应的食材，找到date对应的这一天的时才两并更新
       Object.keys(this.recipes[id]).forEach((assetsId) => {
-        debugger;
         let shengyu = this.date[time][assetsId][1];
         this.date[time][assetsId][1] =
-          shengyu - sold * this.recipes[id][assetsId];
+          shengyu - solding * this.recipes[id][assetsId];
         Object.keys(this.date).forEach((time1) => {
           if (moment(time1).isAfter(moment(time))) {
             let shengyu2 = this.date[time1][assetsId][1];
             this.date[time1][assetsId][1] =
-              shengyu2 - sold * this.recipes[id][assetsId];
+              shengyu2 - solding * this.recipes[id][assetsId];
           }
         });
       });
@@ -277,7 +274,7 @@ export default {
       }
     },
     editAssets() {
-      this.$refs.editTable2.showDialog();
+      this.$refs.editTableAll.showDialog();
     },
     addAssets() {
       // this.currentData = this.getCurrentData();
@@ -286,9 +283,6 @@ export default {
         form: {},
         dialogType: "add",
       });
-    },
-    addAssets2() {
-      this.$refs["addProduct"].showDialog();
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
@@ -327,13 +321,6 @@ export default {
         this.updateDate2(this.productsDate);
       } else {
         let result = this.productsOriginData.find((item) => item.id === id);
-        if (!result) {
-          this.$message({
-            message: `类型${name}已存在`,
-            type: "warning",
-          });
-          return;
-        }
         result.name = name;
         result.price = price;
         result.checkList = checkList;

@@ -8,7 +8,7 @@
     >
       <el-table-column
         :label="column"
-        v-for="(column, index) in getTitle()"
+        v-for="(column, index) in transTitle"
         :key="column + index"
       >
         <el-table-column
@@ -48,7 +48,6 @@ export default {
       types: [],
       columns: [],
       tableData: [],
-      weeks: [],
       // originData: [{ name: "gfd123", type: "解冻", unit: "ml", count: 0 }],
     };
   },
@@ -61,6 +60,10 @@ export default {
     date: {
       type: Object,
       default: () => {},
+    },
+    weeks: {
+      type: Array,
+      default: () => [],
     },
   },
   watch: {
@@ -79,10 +82,31 @@ export default {
   },
   computed: {
     transTitle() {
-      return ["", ...this.weeks, ""];
+      let weeks = this.weeks.map((time) => `${time} ${this.getWeek(time)}`);
+      return ["", ...weeks, ""];
     },
   },
   methods: {
+    getWeek(date) {
+      // 参数时间戳
+      let week = moment(date).day();
+      switch (week) {
+        case 1:
+          return "周一";
+        case 2:
+          return "周二";
+        case 3:
+          return "周三";
+        case 4:
+          return "周四";
+        case 5:
+          return "周五";
+        case 6:
+          return "周六";
+        case 0:
+          return "周日";
+      }
+    },
     getFormatName(prev, next) {
       return `${prev} (${next})`;
     },
@@ -111,19 +135,6 @@ export default {
     isArray(arr) {
       return Object.prototype.toString.call(arr) === "[object Array]";
     },
-    getTitle() {
-      let mapWeek = {
-        1: "周一",
-        2: "周二",
-        3: "周三",
-        4: "周四",
-        5: "周五",
-        6: "周六",
-        7: "周日",
-      };
-      let weeks = this.weeks.map((key, ids) => key + "/" + mapWeek[ids + 1]);
-      return ["", "", ...weeks, ""];
-    },
     getSubTitle(index, len) {
       let title = "售出/总价";
       if (index === 0) {
@@ -137,18 +148,6 @@ export default {
       }
 
       return title;
-    },
-    generateWeeks() {
-      let weeks = [];
-      let weekOfday = moment().format("E"); //计算今天是这周第几天
-      let last_monday = moment()
-        .startOf()
-        .subtract(weekOfday - 1, "days")
-        .format("YYYY/MM/DD"); //周一日期
-      for (let i = 0; i < 7; i++) {
-        weeks.push(moment(last_monday).add(i, "days").format("YYYY/MM/DD"));
-      }
-      return weeks;
     },
     generateTable() {
       let matrixData = this.originData.map((row) => {
@@ -172,7 +171,6 @@ export default {
   },
   mounted() {},
   created() {
-    this.weeks = this.generateWeeks();
     if (this.originData.length > 0) {
       this.generateTable();
     }
