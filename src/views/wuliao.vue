@@ -139,7 +139,6 @@ export default {
       let val = moment(this.weekData).format("YYYY/MM/DD");
       const weekOfday = moment().format("E");
       let last_monday = moment().format("YYYY/MM/DD");
-      debugger;
       if (val === last_monday) {
         let startTime = moment()
           .subtract(weekOfday - 1, "days")

@@ -214,7 +214,6 @@ export default {
     saveTableCell({ id, sold, time, allPrice }) {
       // 根据产品找出对应的食材，找到date对应的这一天的时才两并更新
       Object.keys(this.recipes[id]).forEach((assetsId) => {
-        debugger;
         let shengyu = this.date[time][assetsId][1];
         this.date[time][assetsId][1] =
           shengyu - sold * this.recipes[id][assetsId];
@@ -313,7 +312,6 @@ export default {
           message: `产品 ${this.form.name}保存成功`,
           type: "success",
         });
-        debugger;
         this.currentData.recipes[newID] = form;
         this.currentData.productsOriginData = this.productsOriginData;
         this.setLocalData(key, "productsOriginData", this.productsOriginData);
@@ -391,7 +389,6 @@ export default {
       this.setLocalData(key, "productsDate", this.productsDate);
     },
     updateDate2(date) {
-      debugger;
       this.weeks.forEach((time) => {
         if (this.productsOriginData.length > 0) {
           if (!date[time]) {

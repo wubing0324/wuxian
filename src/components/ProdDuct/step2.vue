@@ -82,7 +82,6 @@ export default {
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
-        debugger;
         if (valid) {
           this.setStepIndex(this.stepIndex + 1);
           if (this.dialogType === "add") {

@@ -202,7 +202,6 @@ export default {
             Number(addNum1[1]) - Number(this.form[id]);
         });
       }
-      debugger;
       return result;
     },
     submitForm(formName) {
