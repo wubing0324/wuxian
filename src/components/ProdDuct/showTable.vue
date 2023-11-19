@@ -65,15 +65,13 @@ export default {
   },
   watch: {
     originData: {
-      handler: function (val) {
-        console.log("tyable = ", val);
+      handler: function () {
         this.generateTable();
       },
       deep: true,
     },
     date: {
-      handler: function (val) {
-        console.log("更新日期，刷新表格", val);
+      handler: function () {
         this.generateTable();
       },
       deep: true,
@@ -161,11 +159,6 @@ export default {
         return arr;
       });
       this.tableData = matrixData.map((col) => {
-        let cols = this.weeks.map((key) => {
-          console.log(key, col);
-          return this.date[key];
-        });
-        console.log("cols =", cols);
         return [
           col[0],
           col[1],
@@ -175,7 +168,6 @@ export default {
           col[3],
         ];
       });
-      console.log("this.tableData = ", this.tableData);
     },
   },
   mounted() {},
@@ -184,7 +176,6 @@ export default {
     if (this.originData.length > 0) {
       this.generateTable();
     }
-    console.log("originData =", this.originData);
   },
 };
 </script>

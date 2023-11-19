@@ -112,7 +112,6 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log(this.dyForm);
           let key = this.$route.params.id;
           this.currentData.assetRules = [
             ...this.assetRules,
@@ -173,7 +172,6 @@ export default {
             }),
         };
       });
-      console.log(columns);
       return columns;
     },
   },

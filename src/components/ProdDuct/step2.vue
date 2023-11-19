@@ -7,9 +7,8 @@
       label-width="100px"
       class="demo-ruleForm"
     >
-      {{ checkList }}
       <el-form-item
-        :label="check + ''"
+        :label="assetMap[check + '']"
         :key="check"
         :prop="check + ''"
         :rules="[{ required: true, message: '数量不能为空' }]"
@@ -40,10 +39,13 @@ export default {
       productsOriginData: [],
       productsDate: {},
       form: {},
+      assetMap: {},
+      originData2: [],
     };
   },
   props: {
     productName: String,
+    // 产品列表
     originData: {
       type: Array,
       default: () => [],
@@ -133,6 +135,10 @@ export default {
     this.currentData = this.getCurrentData();
     this.productsOriginData = this.currentData.productsOriginData;
     this.productsDate = this.currentData.productsDate;
+    this.originData2 = this.currentData.originData;
+    this.originData2.forEach((asset) => {
+      this.assetMap[asset.id] = asset.name;
+    });
   },
 };
 </script>

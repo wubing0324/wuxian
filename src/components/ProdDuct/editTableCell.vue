@@ -106,7 +106,6 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log("form=", this.form);
           this.$emit("saveTableCell", { ...this.form });
           this.$message({
             message: `${this.form.name} 修改成功`,
@@ -124,7 +123,6 @@ export default {
       this.$refs[formName].resetFields();
     },
     showDialog(form) {
-      console.log("editdata =", form);
       this.dialogVisible = true;
       this.form = form;
     },

@@ -117,11 +117,9 @@ export default {
       }
     },
     saveCard() {
-      console.log("保存");
       this.edit = false;
     },
     deleteCard() {
-      console.log("删除");
       this.$emit("deleteData");
     },
   },

@@ -108,7 +108,6 @@ export default {
       let last_monday = moment()
         .subtract(weekOfday - 2, "days")
         .format("YYYY/MM/DD");
-      console.log(last_monday, val);
       if (val === last_monday) {
         this.now = moment().format("YYYY/MM/DD");
       } else {
@@ -182,15 +181,6 @@ export default {
         return data.increase[1] + "" === id + "";
       });
       if (result) {
-        console.log(
-          "object.hasownpro = ",
-          Object.prototype.hasOwnProperty.call(
-            this.oldForm,
-            result.decrease[1]
-          ),
-          this.oldForm,
-          result.decrease[1]
-        );
         let addNum = this.date[this.now][result.decrease[1]];
         // 修改当前入库量
         this.date[this.now][result.decrease[1]][0] =

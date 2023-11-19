@@ -136,8 +136,7 @@ export default {
       this.$refs[formName].resetFields();
       this.dialogVisible = false;
     },
-    showDialog(data) {
-      console.log("editdata =", data);
+    showDialog() {
       this.dialogVisible = true;
     },
     handleClose() {

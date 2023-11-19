@@ -5,7 +5,7 @@
       :rules="rules"
       :model="form"
       ref="form"
-      label-width="100px"
+      label-width="180px"
       class="demo-ruleForm"
     >
       <el-form-item label="产品名称" prop="name">
@@ -18,7 +18,6 @@
           autocomplete="off"
         ></el-input>
       </el-form-item>
-      {{ form.checkList }}
       <el-form-item label="组成" prop="checkList">
         <el-checkbox-group
           v-model="form.checkList"
@@ -107,13 +106,9 @@ export default {
     ...mapMutations(["setStepIndex", "setCheckList", "setFormInfo"]),
     filterData(type) {
       let data = this.originData.filter((data) => data.type === type);
-      console.log(data);
       return data;
     },
-    handleCheckedCitiesChange(val) {
-      console.log("val = ", val);
-      console.log("checklist = ", this.form.checkList);
-    },
+    handleCheckedCitiesChange() {},
     getWeek(date) {
       // 参数时间戳
       let week = moment(date).day();

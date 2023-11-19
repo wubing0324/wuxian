@@ -94,9 +94,7 @@ export default {
       // this.form.shengyu = Number(this.form.shengyu) + (val - this.prev);
       // this.prev = val;
     },
-    rukuChange(val) {
-      console.log(val, this.form.shengyu);
-    },
+    rukuChange() {},
     getWeek(date) {
       // 参数时间戳
       let week = moment(date).day();
@@ -134,7 +132,6 @@ export default {
           this.needIncrement = 0;
           this.increment = 0;
         } else {
-          console.log("error submit!!");
           return false;
         }
       });
@@ -146,7 +143,6 @@ export default {
       this.$refs[formName].resetFields();
     },
     showDialog(form) {
-      console.log("editdata =", form);
       this.dialogVisible = true;
       this.increment = 0;
       this.needIncrement = 0;

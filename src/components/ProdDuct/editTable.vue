@@ -60,7 +60,6 @@ export default {
   methods: {
     ...mapMutations(["setStepIndex"]),
     showDialog({ form, dialogType }) {
-      console.log("editdata =", form);
       this.setStepIndex(1);
       if (dialogType === "edit") {
         this.currentForm = form;

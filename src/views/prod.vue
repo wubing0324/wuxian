@@ -1,12 +1,32 @@
 <template>
   <div class="wuliao-container">
     <div v-show="nodata">暂无数据，请先添加数据</div>
+    <div class="switch-week">
+      <el-date-picker
+        v-model="weekData"
+        type="week"
+        :format="formatDate"
+        placeholder="选择周"
+        :picker-options="pickerOptions"
+        value-format="yyyy/MM/dd"
+        @change="changeWeek"
+      >
+      </el-date-picker>
+    </div>
     <showTable
       :date="productsDate"
       :originData="productsOriginData"
       @cellDblClick="cellDblClick"
       ref="showtable"
     ></showTable>
+    <editTable2
+      ref="editTable2"
+      @updateAssets="updateAssets"
+      :originData="productsOriginData"
+      :date="date"
+      :nowFromProps="weekData"
+      @nowChange="changeWeek"
+    ></editTable2>
     <editTable
       ref="editTable"
       @updateProd="updateProd"
@@ -49,7 +69,7 @@
     <addProduct ref="addProduct"></addProduct>
     <el-button type="primary" @click="goWuliao">食材界面</el-button>
     <el-button type="primary" @click="addAssets">添加产品</el-button>
-    <el-button type="primary" @click="addAssets2">添加产品22</el-button>
+    <!-- <el-button type="primary" @click="addAssets2">添加产品22</el-button> -->
     <el-button type="success" @click="editAssets">修改产品</el-button>
   </div>
 </template>
@@ -57,6 +77,7 @@
 <script>
 import showTable from "@/components/ProdDuct/showTable.vue";
 import editTable from "@/components/ProdDuct/editTable.vue";
+import editTable2 from "@/components/ProdDuct/editTable2.vue";
 import addProduct from "@/components/ProdDuct/addProduct.vue";
 import editTableCell from "@/components/ProdDuct/editTableCell.vue";
 import moment from "moment";
@@ -68,9 +89,18 @@ export default {
     editTable,
     editTableCell,
     addProduct,
+    editTable2,
   },
   data() {
     return {
+      pickerOptions: {
+        firstDayOfWeek: 1,
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      weeks: [],
+      weekData: moment().format("YYYY/MM/DD"),
       date: {},
       productsDate: {},
       productsOriginData: [],
@@ -102,23 +132,100 @@ export default {
       let data = Object.keys(this.currentData);
       return data.length === 0;
     },
+    formatDate() {
+      let val = moment(this.weekData).format("YYYY/MM/DD");
+      const weekOfday = moment().format("E");
+      let last_monday = moment().format("YYYY/MM/DD");
+      if (val === last_monday) {
+        let startTime = moment()
+          .subtract(weekOfday - 1, "days")
+          .format("YYYY/MM/DD");
+        let endTime = moment()
+          .subtract(7 - weekOfday, "days")
+          .format("YYYY/MM/DD");
+        return `${startTime} 至 ${endTime}`;
+      } else {
+        let startTime = moment(this.weekData)
+          .subtract(1, "days")
+          .format("YYYY/MM/DD");
+        let endTime = moment(this.weekData).add(5, "days").format("YYYY/MM/DD");
+        return `${startTime} 至 ${endTime}`;
+      }
+    },
   },
   props: {},
   methods: {
+    changeWeek(val) {
+      this.weeks = this.generateWeeks(val);
+      let date = {};
+      this.weeks.forEach((time) => {
+        if (!this.productsDate[time]) {
+          date[time] = {};
+          this.productsOriginData.forEach((item) => {
+            date[time][item.id] = [0, 0];
+          });
+        }
+      });
+      // this.productsDate = Object.assign(this.productsDate, date);
+      const dates = { ...this.productsDate, ...date };
+      this.$set(this, "productsDate", dates);
+      this.updateDate(this.productsDate);
+    },
+    generateWeeks(val) {
+      let weeks = [];
+      let weekOfday = val ? moment(val).format("E") : moment().format("E"); //计算今天是这周第几天
+      let last_monday = (val ? moment(val) : moment())
+        .startOf()
+        .subtract(weekOfday - 1, "days")
+        .format("YYYY/MM/DD"); //周一日期
+      for (let i = 0; i < 7; i++) {
+        weeks.push(moment(last_monday).add(i, "days").format("YYYY/MM/DD"));
+      }
+      return weeks;
+    },
     goWuliao(type) {
       this.$router.push({ path: `/wuliao/${type}` });
     },
-    saveTableCell({ id, sold, time, allPrice }) {
-      Object.keys(this.recipes[id]).forEach((assetsName) => {
+    updateAssets(soldInfos) {
+      soldInfos.forEach((info) => {
+        this.caculate(info);
+      });
+      this.currentData.date = this.date;
+      this.currentData.productsDate = this.productsDate;
+      let key = this.$route.params.id;
+      this.setLocalData(key, "productsDate", this.productsDate);
+      this.setLocalData(key, "date", this.date);
+      this.$refs["showtable"].generateTable();
+    },
+    caculate({ id, sold, time, allPrice }) {
+      // 根据产品找出对应的食材，找到date对应的这一天的时才两并更新
+      Object.keys(this.recipes[id]).forEach((assetsId) => {
         debugger;
-        let shengyu = this.date[time][assetsName][1];
-        this.date[time][assetsName][1] =
-          shengyu - sold * this.recipes[id][assetsName];
+        let shengyu = this.date[time][assetsId][1];
+        this.date[time][assetsId][1] =
+          shengyu - sold * this.recipes[id][assetsId];
         Object.keys(this.date).forEach((time1) => {
           if (moment(time1).isAfter(moment(time))) {
-            let shengyu2 = this.date[time1][assetsName][1];
-            this.date[time1][assetsName][1] =
-              shengyu2 - sold * this.recipes[id][assetsName];
+            let shengyu2 = this.date[time1][assetsId][1];
+            this.date[time1][assetsId][1] =
+              shengyu2 - sold * this.recipes[id][assetsId];
+          }
+        });
+      });
+      this.productsDate[time][id] = [sold, allPrice];
+    },
+    saveTableCell({ id, sold, time, allPrice }) {
+      // 根据产品找出对应的食材，找到date对应的这一天的时才两并更新
+      Object.keys(this.recipes[id]).forEach((assetsId) => {
+        debugger;
+        let shengyu = this.date[time][assetsId][1];
+        this.date[time][assetsId][1] =
+          shengyu - sold * this.recipes[id][assetsId];
+        Object.keys(this.date).forEach((time1) => {
+          if (moment(time1).isAfter(moment(time))) {
+            let shengyu2 = this.date[time1][assetsId][1];
+            this.date[time1][assetsId][1] =
+              shengyu2 - sold * this.recipes[id][assetsId];
           }
         });
       });
@@ -127,6 +234,7 @@ export default {
       this.currentData.productsDate = this.productsDate;
       let key = this.$route.params.id;
       this.setLocalData(key, "productsDate", this.productsDate);
+      this.setLocalData(key, "date", this.date);
       this.$refs["showtable"].generateTable();
     },
     checkAssets() {
@@ -144,7 +252,6 @@ export default {
       if (column.index === row.length - 1) {
         return;
       }
-      debugger;
       // console.log("column = ", column);
       // console.log("weeks = ", weeks);
       // console.log("选中的数据 = ", row[column.index]);
@@ -154,7 +261,6 @@ export default {
       let timeKey = weeks[column.index - 2];
       if (column.index > 1 && column.index < row.length - 1) {
         let data = this.productsDate[timeKey][selectedData.id];
-        console.log(data);
         this.$refs.editTableCell.showDialog({
           sold: data[0],
           allPrice: Number(data[0]) * Number(row[1]),
@@ -171,7 +277,7 @@ export default {
       }
     },
     editAssets() {
-      this.$refs.editTable.showDialog();
+      this.$refs.editTable2.showDialog();
     },
     addAssets() {
       // this.currentData = this.getCurrentData();
@@ -189,7 +295,6 @@ export default {
       this.dialogVisible = false;
     },
     updateProd({ id, name, price, checkList, form, type }) {
-      debugger;
       let key = this.$route.params.id;
       if (type === "add") {
         let newID = this.productsOriginData.length;
@@ -214,11 +319,12 @@ export default {
           message: `产品 ${this.form.name}保存成功`,
           type: "success",
         });
-        this.currentData.recipes[id] = form;
+        debugger;
+        this.currentData.recipes[newID] = form;
         this.currentData.productsOriginData = this.productsOriginData;
         this.setLocalData(key, "productsOriginData", this.productsOriginData);
         this.setLocalData(key, "recipes", this.currentData.recipes);
-        this.updateDate(this.productsDate);
+        this.updateDate2(this.productsDate);
       } else {
         let result = this.productsOriginData.find((item) => item.id === id);
         if (!result) {
@@ -233,7 +339,7 @@ export default {
         result.checkList = checkList;
         this.currentData.recipes[id] = form;
         this.currentData.productsOriginData = this.productsOriginData;
-        this.updateDate(this.productsDate);
+        this.updateDate2(this.productsDate);
         this.setLocalData(key, "productsOriginData", this.productsOriginData);
         this.setLocalData(key, "recipes", this.currentData.recipes);
       }
@@ -260,7 +366,7 @@ export default {
             count: 0,
             checkList: [],
           });
-          this.updateDate(this.productsDate);
+          this.updateDate2(this.productsDate);
           let key = this.$route.params.id;
           this.currentData.productsOriginData = this.productsOriginData;
           this.setLocalData(key, "productsOriginData", this.productsOriginData);
@@ -280,7 +386,7 @@ export default {
       let currentData = this.getLocalData(key);
       return currentData;
     },
-    generateWeeks() {
+    generateWeeks2() {
       let weeks = [];
       let weekOfday = moment().format("E"); //计算今天是这周第几天
       let last_monday = moment()
@@ -292,9 +398,14 @@ export default {
       }
       return weeks;
     },
-    updateDate(date) {
-      let weeks = this.generateWeeks();
-      weeks.forEach((time) => {
+    updateDate() {
+      this.currentData.productsDate = this.productsDate;
+      let key = this.$route.params.id;
+      this.setLocalData(key, "productsDate", this.productsDate);
+    },
+    updateDate2(date) {
+      debugger;
+      this.weeks.forEach((time) => {
         if (this.productsOriginData.length > 0) {
           if (!date[time]) {
             date[time] = {};
@@ -318,6 +429,7 @@ export default {
     this.productsDate = this.currentData.productsDate;
     this.recipes = this.currentData.recipes;
     this.date = this.currentData.date;
+    this.changeWeek();
   },
   mounted() {},
 };

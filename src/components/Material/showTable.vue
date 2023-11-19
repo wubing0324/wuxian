@@ -74,8 +74,7 @@ export default {
       deep: true,
     },
     date: {
-      handler: function (val) {
-        console.log("更新日期，刷新表格", val);
+      handler: function () {
         this.generateTable();
       },
       deep: true,
@@ -174,16 +173,9 @@ export default {
           return arr;
         })
       );
-      console.log("this.date = ", this.date);
       this.tableData = matrixData.map((data, index) =>
         data.map((col, i) => {
           let id = columns[index][i].id;
-          console.log(
-            this.weeks,
-            this.weeks.map((key) => {
-              return this.date[key][id];
-            })
-          );
           return [
             this.getFormatName(columns[index][i].name, columns[index][i].unit),
             ...this.weeks.map((key) => {
@@ -193,7 +185,6 @@ export default {
           ];
         })
       );
-      console.log("tabledata =- =====", this.tableData);
     },
   },
   mounted() {},
@@ -201,7 +192,6 @@ export default {
     if (this.originData.length > 0) {
       this.generateTable();
     }
-    console.log("originData =", this.originData);
   },
 };
 </script>
