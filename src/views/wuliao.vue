@@ -73,8 +73,8 @@
     <el-button type="primary" @click="goProd">产品</el-button>
     <el-button type="primary" @click="addAssets">添加食材</el-button>
     <el-button type="success" @click="editAssets">修改食材</el-button>
-    <el-button type="success" @click="addAssetType">添加种类</el-button>
-    <el-button type="success" @click="addRule">添加规则</el-button>
+    <el-button type="success" @click="addAssetType">添加食材种类</el-button>
+    <el-button type="success" @click="addRule">添加食材之间规则</el-button>
   </div>
 </template>
 

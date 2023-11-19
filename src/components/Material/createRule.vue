@@ -117,6 +117,10 @@ export default {
             ...this.assetRules,
             ...this.dyForm.assetRules,
           ];
+          this.$message({
+            message: `规则保存成功`,
+            type: "success",
+          });
           this.setLocalData(key, "assetRules", this.currentData.assetRules);
         } else {
           console.log("error submit!!");
