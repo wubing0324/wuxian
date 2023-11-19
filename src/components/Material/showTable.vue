@@ -1,18 +1,5 @@
 <template>
   <div class="shicai-container">
-    <div class="switch-week">
-      {{ weekData }}
-      <el-date-picker
-        v-model="weekData"
-        type="week"
-        format="MM月 第 W 周"
-        placeholder="选择周"
-        :picker-options="pickerOptions"
-        value-format="yyyy/MM/dd"
-        @change="changeWeek"
-      >
-      </el-date-picker>
-    </div>
     <div v-for="(data, ids) in tableData" :key="types[ids]">
       <p class="table-type">{{ types[ids] }}</p>
       <el-table
@@ -57,24 +44,20 @@ export default {
   },
   data() {
     return {
-      pickerOptions: {
-        firstDayOfWeek: 1,
-        disabledDate(time) {
-          return time.getTime() > Date.now();
-        },
-      },
-      weekData: "",
       rowName: "",
       types: [],
       columns: [],
       tableData: [],
-      weeks: [],
       // originData: [{ name: "gfd123", type: "解冻", unit: "ml", count: 0 }],
     };
   },
   props: {
     msg: String,
     originData: {
+      type: Array,
+      default: () => [],
+    },
+    weeks: {
       type: Array,
       default: () => [],
     },
@@ -97,6 +80,13 @@ export default {
       },
       deep: true,
     },
+    // weeks: {
+    //   handler: function (val) {
+    //     console.log("更新weeks，刷新表格", val);
+    //     this.generateTable();
+    //   },
+    //   deep: true,
+    // },
   },
   computed: {
     transTitle() {
@@ -106,9 +96,6 @@ export default {
   },
   methods: {
     ...mapMutations(["setAssetTypes"]),
-    changeWeek(val) {
-      this.weeks = this.generateWeeks(val);
-    },
     getFormatName(prev, next) {
       return `${prev} (${next})`;
     },
@@ -159,21 +146,6 @@ export default {
           return "周日";
       }
     },
-    getTitle(index) {
-      let mapWeek = {
-        1: "周一",
-        2: "周二",
-        3: "周三",
-        4: "周四",
-        5: "周五",
-        6: "周六",
-        7: "周日",
-      };
-      let weeks = this.weeks.map(
-        (key, index) => key + "/" + mapWeek[index + 1]
-      );
-      return [this.types[index], ...weeks, ""];
-    },
     getSubTitle(index, len) {
       let title = "入库/剩余";
       if (index === 0) {
@@ -185,18 +157,6 @@ export default {
       }
 
       return title;
-    },
-    generateWeeks(val) {
-      let weeks = [];
-      let weekOfday = val ? moment(val).format("E") : moment().format("E"); //计算今天是这周第几天
-      let last_monday = (val ? moment(val) : moment())
-        .startOf()
-        .subtract(weekOfday - 1, "days")
-        .format("YYYY/MM/DD"); //周一日期
-      for (let i = 0; i < 7; i++) {
-        weeks.push(moment(last_monday).add(i, "days").format("YYYY/MM/DD"));
-      }
-      return weeks;
     },
     generateTable() {
       let types = new Set(this.originData.map((item) => item.type));
@@ -218,6 +178,12 @@ export default {
       this.tableData = matrixData.map((data, index) =>
         data.map((col, i) => {
           let id = columns[index][i].id;
+          console.log(
+            this.weeks,
+            this.weeks.map((key) => {
+              return this.date[key][id];
+            })
+          );
           return [
             this.getFormatName(columns[index][i].name, columns[index][i].unit),
             ...this.weeks.map((key) => {
@@ -232,7 +198,6 @@ export default {
   },
   mounted() {},
   created() {
-    this.weeks = this.generateWeeks();
     if (this.originData.length > 0) {
       this.generateTable();
     }

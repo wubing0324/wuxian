@@ -1,9 +1,22 @@
 <template>
   <div class="wuliao-container">
     <div v-show="nodata">暂无数据，请先添加数据</div>
+    <div class="switch-week">
+      <el-date-picker
+        v-model="weekData"
+        type="week"
+        :format="formatDate"
+        placeholder="选择周"
+        :picker-options="pickerOptions"
+        value-format="yyyy/MM/dd"
+        @change="changeWeek"
+      >
+      </el-date-picker>
+    </div>
     <showTable
       :originData="originData"
       :date="date"
+      :weeks="weeks"
       ref="showtable"
     ></showTable>
     <editTable
@@ -11,6 +24,8 @@
       @updateAssets="updateAssets"
       :originData="originData"
       :date="date"
+      :nowFromProps="weekData"
+      @nowChange="changeWeek"
     ></editTable>
     <createRule ref="createRule" :originData="originData"></createRule>
     <!-- 食材弹窗 -->
@@ -80,6 +95,14 @@ export default {
   },
   data() {
     return {
+      pickerOptions: {
+        firstDayOfWeek: 1,
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      weeks: [],
+      weekData: moment().format("YYYY/MM/DD"),
       date: {},
       originData: [],
       currentData: {},
@@ -112,9 +135,59 @@ export default {
       let data = Object.keys(this.currentData);
       return data.length === 0;
     },
+    formatDate() {
+      let val = moment(this.weekData).format("YYYY/MM/DD");
+      const weekOfday = moment().format("E");
+      let last_monday = moment().format("YYYY/MM/DD");
+      debugger;
+      if (val === last_monday) {
+        let startTime = moment()
+          .subtract(weekOfday - 1, "days")
+          .format("YYYY/MM/DD");
+        let endTime = moment()
+          .subtract(7 - weekOfday, "days")
+          .format("YYYY/MM/DD");
+        return `${startTime} 至 ${endTime}`;
+      } else {
+        let startTime = moment(this.weekData)
+          .subtract(1, "days")
+          .format("YYYY/MM/DD");
+        let endTime = moment(this.weekData).add(5, "days").format("YYYY/MM/DD");
+        return `${startTime} 至 ${endTime}`;
+      }
+    },
   },
   props: {},
   methods: {
+    changeWeek(val) {
+      this.weeks = this.generateWeeks(val);
+      let date = {};
+      this.weeks.forEach((time) => {
+        if (!this.date[time]) {
+          date[time] = {};
+          this.originData.forEach((item) => {
+            date[time][item.id] = [0, 0];
+          });
+        }
+      });
+      this.date = Object.assign(this.date, date);
+      const dates = { ...this.date, ...date };
+      this.$set(this, "date", dates);
+      this.updateDate(this.date);
+      // this.$refs["showtable"].generateTable();
+    },
+    generateWeeks(val) {
+      let weeks = [];
+      let weekOfday = val ? moment(val).format("E") : moment().format("E"); //计算今天是这周第几天
+      let last_monday = (val ? moment(val) : moment())
+        .startOf()
+        .subtract(weekOfday - 1, "days")
+        .format("YYYY/MM/DD"); //周一日期
+      for (let i = 0; i < 7; i++) {
+        weeks.push(moment(last_monday).add(i, "days").format("YYYY/MM/DD"));
+      }
+      return weeks;
+    },
     goProd() {
       let type = this.$route.params.id;
       this.$router.push({ path: `/prod/${type}` });
@@ -178,11 +251,10 @@ export default {
                   count: 0,
                   id: id,
                 });
-                this.updateDate(this.date);
-                // this.generateColumns();
+                this.updateDate2(this.date);
                 let key = this.$route.params.id;
                 this.currentData.originData = this.originData;
-                localStorage.setItem(key, JSON.stringify(this.currentData));
+                this.setLocalData(key, "originData", this.originData);
                 this.$message({
                   message: `类型${this.form.name}保存成功`,
                   type: "success",
@@ -200,11 +272,11 @@ export default {
               count: 0,
               id: id,
             });
-            this.updateDate(this.date);
+            this.updateDate2(this.date);
             // this.generateColumns();
             let key = this.$route.params.id;
             this.currentData.originData = this.originData;
-            localStorage.setItem(key, JSON.stringify(this.currentData));
+            this.setLocalData(key, "originData", this.originData);
             this.$message({
               message: `类型${this.form.name}保存成功`,
               type: "success",
@@ -228,21 +300,13 @@ export default {
       });
       return currentData;
     },
-    generateWeeks() {
-      let weeks = [];
-      let weekOfday = moment().format("E"); //计算今天是这周第几天
-      let last_monday = moment()
-        .startOf()
-        .subtract(weekOfday - 1, "days")
-        .format("YYYY/MM/DD"); //周一日期
-      for (let i = 0; i < 7; i++) {
-        weeks.push(moment(last_monday).add(i, "days").format("YYYY/MM/DD"));
-      }
-      return weeks;
+    updateDate() {
+      this.currentData.date = this.date;
+      let key = this.$route.params.id;
+      this.setLocalData(key, "date", this.date);
     },
-    updateDate(date) {
-      let weeks = this.generateWeeks();
-      weeks.forEach((time) => {
+    updateDate2(date) {
+      this.weeks.forEach((time) => {
         if (this.originData.length > 0) {
           if (!date[time]) {
             date[time] = {};
@@ -255,10 +319,9 @@ export default {
         }
       });
       this.currentData.date = date;
-      console.log(date);
       this.date = date;
       let key = this.$route.params.id;
-      localStorage.setItem(key, JSON.stringify(this.currentData));
+      this.setLocalData(key, "date", this.date);
     },
     updateAssets(date) {
       this.date = date;
@@ -270,6 +333,7 @@ export default {
     this.originData = this.currentData.originData;
     this.assetTypeData = this.currentData.assetTypeData;
     this.date = this.currentData.date;
+    this.changeWeek();
   },
   mounted() {},
 };

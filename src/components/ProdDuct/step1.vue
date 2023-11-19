@@ -18,17 +18,26 @@
           autocomplete="off"
         ></el-input>
       </el-form-item>
+      {{ form.checkList }}
       <el-form-item label="组成" prop="checkList">
         <el-checkbox-group
           v-model="form.checkList"
           @change="handleCheckedCitiesChange"
         >
-          <el-checkbox
-            v-for="asset in originData"
-            :label="asset.name"
-            :key="asset.name"
-            >{{ asset.name }}</el-checkbox
+          <div
+            class="assetTypeData"
+            v-for="type in assetTypeData"
+            :key="type.value"
           >
+            <span class="type-class">{{ type.value }}：</span>
+            <el-checkbox
+              v-for="asset in filterData(type.value)"
+              :label="asset.id"
+              :key="asset.id"
+              :value="asset.id"
+              >{{ asset.name }}</el-checkbox
+            >
+          </div>
         </el-checkbox-group>
       </el-form-item>
       <el-form-item>
@@ -47,6 +56,7 @@ export default {
   components: {},
   data() {
     return {
+      assetTypeData: [],
       dialogVisible: false,
       rules: {
         name: [{ required: true, message: "请输入名称", trigger: "blur" }],
@@ -86,7 +96,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(["stepIndex"]),
+    ...mapState(["stepIndex", "types"]),
     // title() {
     //   const { time, name } = this.form;
     //   let week = this.getWeek(time);
@@ -95,6 +105,11 @@ export default {
   },
   methods: {
     ...mapMutations(["setStepIndex", "setCheckList", "setFormInfo"]),
+    filterData(type) {
+      let data = this.originData.filter((data) => data.type === type);
+      console.log(data);
+      return data;
+    },
     handleCheckedCitiesChange(val) {
       console.log("val = ", val);
       console.log("checklist = ", this.form.checkList);
@@ -147,6 +162,7 @@ export default {
   created() {
     this.currentData = this.getCurrentData();
     this.originData = this.currentData.originData;
+    this.assetTypeData = this.currentData.assetTypeData;
     if (this.dialogType === "edit") {
       this.form = { ...this.currentForm };
     }
@@ -157,6 +173,15 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
+.assetTypeData {
+  display: flex;
+  .type-class {
+    font-size: 16px;
+    margin-right: 10px;
+    width: 120px;
+    text-align: left;
+  }
+}
 .prod-step1 {
   .shengyu {
     color: green;

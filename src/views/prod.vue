@@ -108,24 +108,25 @@ export default {
     goWuliao(type) {
       this.$router.push({ path: `/wuliao/${type}` });
     },
-    saveTableCell({ sold, name, time, allPrice }) {
-      Object.keys(this.recipes[name]).forEach((assetsName) => {
+    saveTableCell({ id, sold, time, allPrice }) {
+      Object.keys(this.recipes[id]).forEach((assetsName) => {
+        debugger;
         let shengyu = this.date[time][assetsName][1];
         this.date[time][assetsName][1] =
-          shengyu - sold * this.recipes[name][assetsName];
+          shengyu - sold * this.recipes[id][assetsName];
         Object.keys(this.date).forEach((time1) => {
           if (moment(time1).isAfter(moment(time))) {
             let shengyu2 = this.date[time1][assetsName][1];
             this.date[time1][assetsName][1] =
-              shengyu2 - sold * this.recipes[name][assetsName];
+              shengyu2 - sold * this.recipes[id][assetsName];
           }
         });
       });
       this.currentData.date = this.date;
-      this.productsDate[time][name] = [sold, allPrice];
+      this.productsDate[time][id] = [sold, allPrice];
       this.currentData.productsDate = this.productsDate;
       let key = this.$route.params.id;
-      localStorage.setItem(key, JSON.stringify(this.currentData));
+      this.setLocalData(key, "productsDate", this.productsDate);
       this.$refs["showtable"].generateTable();
     },
     checkAssets() {
@@ -143,6 +144,7 @@ export default {
       if (column.index === row.length - 1) {
         return;
       }
+      debugger;
       // console.log("column = ", column);
       // console.log("weeks = ", weeks);
       // console.log("选中的数据 = ", row[column.index]);
@@ -151,7 +153,7 @@ export default {
       let name = row[0];
       let timeKey = weeks[column.index - 2];
       if (column.index > 1 && column.index < row.length - 1) {
-        let data = this.productsDate[timeKey][name];
+        let data = this.productsDate[timeKey][selectedData.id];
         console.log(data);
         this.$refs.editTableCell.showDialog({
           sold: data[0],
@@ -159,6 +161,7 @@ export default {
           time: timeKey,
           name: name,
           price: Number(row[1]),
+          id: selectedData.id,
         });
       } else {
         this.$refs.editTable.showDialog({
@@ -186,6 +189,8 @@ export default {
       this.dialogVisible = false;
     },
     updateProd({ id, name, price, checkList, form, type }) {
+      debugger;
+      let key = this.$route.params.id;
       if (type === "add") {
         let newID = this.productsOriginData.length;
         let result = this.productsOriginData.filter(
@@ -209,8 +214,10 @@ export default {
           message: `产品 ${this.form.name}保存成功`,
           type: "success",
         });
-        this.currentData.recipes[name] = form;
+        this.currentData.recipes[id] = form;
         this.currentData.productsOriginData = this.productsOriginData;
+        this.setLocalData(key, "productsOriginData", this.productsOriginData);
+        this.setLocalData(key, "recipes", this.currentData.recipes);
         this.updateDate(this.productsDate);
       } else {
         let result = this.productsOriginData.find((item) => item.id === id);
@@ -224,9 +231,11 @@ export default {
         result.name = name;
         result.price = price;
         result.checkList = checkList;
-        this.currentData.recipes[name] = form;
+        this.currentData.recipes[id] = form;
         this.currentData.productsOriginData = this.productsOriginData;
         this.updateDate(this.productsDate);
+        this.setLocalData(key, "productsOriginData", this.productsOriginData);
+        this.setLocalData(key, "recipes", this.currentData.recipes);
       }
     },
     submitForm(formName) {
@@ -254,7 +263,7 @@ export default {
           this.updateDate(this.productsDate);
           let key = this.$route.params.id;
           this.currentData.productsOriginData = this.productsOriginData;
-          localStorage.setItem(key, JSON.stringify(this.currentData));
+          this.setLocalData(key, "productsOriginData", this.productsOriginData);
           this.$message({
             message: `产品 ${this.form.name}保存成功`,
             type: "success",
@@ -291,8 +300,8 @@ export default {
             date[time] = {};
           }
           this.productsOriginData.forEach((item) => {
-            if (!date[time][item.name]) {
-              date[time][item.name] = [0, 0];
+            if (!date[time][item.id]) {
+              date[time][item.id] = [0, 0];
             }
           });
         }
@@ -300,8 +309,7 @@ export default {
       this.currentData.productsDate = date;
       this.productsDate = date;
       let key = this.$route.params.id;
-      debugger;
-      localStorage.setItem(key, JSON.stringify(this.currentData));
+      this.setLocalData(key, "productsDate", this.productsDate);
     },
   },
   created() {

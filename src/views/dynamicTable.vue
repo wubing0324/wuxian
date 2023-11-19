@@ -29,13 +29,7 @@ export default {
   },
   watch: {
     $route: {
-      handler: function (val) {
-        let key = val.params.id;
-        let data = localStorage.getItem(key);
-        if (!data) {
-          localStorage.setItem(key, JSON.stringify([]));
-        }
-      },
+      handler: function (val) {},
       immediate: true,
     },
   },

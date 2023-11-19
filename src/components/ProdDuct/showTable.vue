@@ -161,11 +161,16 @@ export default {
         return arr;
       });
       this.tableData = matrixData.map((col) => {
+        let cols = this.weeks.map((key) => {
+          console.log(key, col);
+          return this.date[key];
+        });
+        console.log("cols =", cols);
         return [
           col[0],
           col[1],
           ...this.weeks.map((key) => {
-            return this.date[key][col[0]];
+            return this.date[key][col[2]];
           }),
           col[3],
         ];

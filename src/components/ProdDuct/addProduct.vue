@@ -107,7 +107,7 @@ export default {
           });
           let key = this.$route.params.id;
           this.currentData.productsOriginData = this.productsOriginData;
-          localStorage.setItem(key, JSON.stringify(this.currentData));
+          this.setLocalData(key, "productsOriginData", this.productsOriginData);
           this.$message({
             message: `产品 ${this.form.name}保存成功`,
             type: "success",

@@ -98,7 +98,7 @@ export default {
           });
           let key = this.$route.params.id;
           this.currentData.assetTypeData = this.assetTypeData;
-          localStorage.setItem(key, JSON.stringify(this.currentData));
+          this.setLocalData(key, "assetTypeData", this.assetTypeData);
           this.$message({
             message: `类型${this.form.name}保存成功`,
             type: "success",

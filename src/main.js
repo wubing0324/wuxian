@@ -30,7 +30,13 @@ function getLocalData(key) {
   }
   return data;
 }
+function setLocalData(key, subKey, data) {
+  let currentData = JSON.parse(localStorage.getItem(key));
+  currentData[subKey] = data;
+  localStorage.setItem(key, JSON.stringify(currentData));
+}
 Vue.prototype.getLocalData = getLocalData;
+Vue.prototype.setLocalData = setLocalData;
 new Vue({
   router,
   store,

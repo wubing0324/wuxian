@@ -114,8 +114,11 @@ export default {
         if (valid) {
           console.log(this.dyForm);
           let key = this.$route.params.id;
-          this.currentData.assetRules = this.dyForm.assetRules;
-          localStorage.setItem(key, JSON.stringify(this.currentData));
+          this.currentData.assetRules = [
+            ...this.assetRules,
+            ...this.dyForm.assetRules,
+          ];
+          this.setLocalData(key, "assetRules", this.currentData.assetRules);
         } else {
           console.log("error submit!!");
           return false;
@@ -153,7 +156,7 @@ export default {
     setDate() {
       this.currentData.date = this.date;
       let key = this.$route.params.id;
-      localStorage.setItem(key, JSON.stringify(this.currentData));
+      this.setLocalData(key, "date", this.date);
     },
     getSelectOptions() {
       let columns = this.types.map((type) => {

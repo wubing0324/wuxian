@@ -136,10 +136,7 @@ export default {
     },
     getCurrentData() {
       let key = this.$route.params.id;
-      let currentData = this.getLocalData(key, {
-        originData: [],
-        date: {},
-      });
+      let currentData = this.getLocalData(key);
       return currentData;
     },
   },

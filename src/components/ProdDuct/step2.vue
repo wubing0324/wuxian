@@ -7,16 +7,17 @@
       label-width="100px"
       class="demo-ruleForm"
     >
+      {{ checkList }}
       <el-form-item
-        :label="check"
+        :label="check + ''"
         :key="check"
-        :prop="check"
+        :prop="check + ''"
         :rules="[{ required: true, message: '数量不能为空' }]"
         v-for="check in checkList"
       >
         <el-input
           type="text"
-          v-model="form[check]"
+          v-model="form[check + '']"
           autocomplete="off"
         ></el-input>
       </el-form-item>
@@ -79,6 +80,7 @@ export default {
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
+        debugger;
         if (valid) {
           this.setStepIndex(this.stepIndex + 1);
           if (this.dialogType === "add") {
