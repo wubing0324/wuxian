@@ -49,6 +49,21 @@ export default {
       this.$router.push({ path: `/wuliao/${type}` });
     },
   },
+  created() {
+    let arr = ["coffee", "branch", "cake"];
+    let storeName = [
+      "assetRules",
+      "assetTypeData",
+      "date",
+      "originData",
+      "productsDate",
+      "productsOriginData",
+      "recipes",
+    ];
+    arr.forEach((name) => {
+      this.openDb(name, storeName);
+    });
+  },
 };
 </script>
 <style lang="less">
