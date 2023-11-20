@@ -84,7 +84,6 @@ import editTable from "@/components/Material/editTable.vue";
 import createRule from "@/components/Material/createRule.vue";
 import AssetType from "@/components/AssetType.vue";
 import moment from "moment";
-
 export default {
   name: "WuLiao",
   components: {

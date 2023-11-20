@@ -1,5 +1,8 @@
 <template>
   <div class="shicai-container">
+    <el-button type="primary" class="export-btn" size="mini" @click="outExcel"
+      >导出</el-button
+    >
     <div v-for="(data, ids) in tableData" :key="types[ids]">
       <p class="table-type">{{ types[ids] }}</p>
       <el-table
@@ -36,6 +39,7 @@
 import moment from "moment";
 // import editTable from "./editTable.vue";
 import { mapMutations } from "vuex";
+import { xlsx } from "../ExcelJs/exportcell";
 
 export default {
   name: "ShowTable",
@@ -44,6 +48,7 @@ export default {
   },
   data() {
     return {
+      allTableData: [],
       rowName: "",
       types: [],
       columns: [],
@@ -95,6 +100,28 @@ export default {
   },
   methods: {
     ...mapMutations(["setAssetTypes"]),
+    outExcel() {
+      // this.jsonData是要导出的数据内容（表格里的内容），
+      // this.listHander对应要导出内容的表头
+      // 学生：指向的是excel文件名
+      // console.table("tabledata = ", this.tableData.flat());
+      // let data3 = [];
+      // this.tableData.forEach(() => {
+      //   data3.push('')
+      // })
+      // this.tableData.forEach((data, ids) => {
+      //   console.log("data==========", data, this.types[ids]);
+      // });
+      let subTitles = this.transTitle.map((data, index) => {
+        return this.getSubTitle(index, 9);
+      });
+      console.log("subTitles = ", subTitles);
+      let data = this.tableData.flat();
+      data.unshift(subTitles);
+      data.unshift(this.transTitle);
+
+      xlsx(data, this.weeks, "学生");
+    },
     getFormatName(prev, next) {
       return `${prev} (${next})`;
     },
@@ -199,6 +226,12 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .shicai-container {
+  position: relative;
+  .export-btn {
+    position: absolute;
+    right: 80px;
+    top: 0;
+  }
   .switch-week {
     font-size: 16px;
   }
