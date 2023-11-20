@@ -17,7 +17,7 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/wuliao.vue"),
+      import(/* webpackChunkName: "wuliao" */ "../views/wuliao.vue"),
   },
   {
     path: "/prod/:id",
@@ -25,8 +25,16 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "prod" */ "../views/prod.vue"),
+  },
+  {
+    path: "/indexDb",
+    name: "indexDb",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/prod.vue"),
+      import(/* webpackChunkName: "indexDb" */ "../views/IndexDb.vue"),
   },
 ];
 

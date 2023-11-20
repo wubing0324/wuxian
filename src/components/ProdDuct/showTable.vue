@@ -83,7 +83,7 @@ export default {
   computed: {
     transTitle() {
       let weeks = this.weeks.map((time) => `${time} ${this.getWeek(time)}`);
-      return ["", ...weeks, ""];
+      return ["", "", ...weeks, ""];
     },
   },
   methods: {
