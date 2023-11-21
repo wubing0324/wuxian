@@ -1,8 +1,25 @@
 <template>
-  <div class="shicai-container">
-    <el-button type="primary" class="export-btn" size="mini" @click="outExcel"
-      >导出</el-button
-    >
+  <div class="shicai-container-table">
+    <el-table :data="[]" class="header-sticky" style="width: 100%" border>
+      <el-table-column
+        :label="column"
+        v-for="(column, index) in transTitle"
+        :key="column + index"
+      >
+        <el-table-column :label="getSubTitle(index, 8)">
+          <template slot-scope="scope">
+            <div v-if="isArray(scope.row[index])">
+              <span class="ruku">{{ scope.row[index][0] }}</span>
+              /
+              <span class="shengyu">{{ scope.row[index][1] }}</span>
+            </div>
+            <div v-else>
+              {{ scope.row[index] }}
+            </div>
+          </template>
+        </el-table-column>
+      </el-table-column>
+    </el-table>
     <div v-for="(data, ids) in tableData" :key="types[ids]">
       <p class="table-type">{{ types[ids] }}</p>
       <el-table
@@ -10,6 +27,9 @@
         style="width: 100%"
         @cell-dblclick="cellDblClick"
         :cell-class-name="tableCellClassName"
+        :show-header="false"
+        border
+        stripe
       >
         <el-table-column
           :label="column"
@@ -70,6 +90,10 @@ export default {
       type: Object,
       default: () => {},
     },
+    formatDate: {
+      type: String,
+      default: () => moment().format("YYYYMMDD"),
+    },
   },
   watch: {
     originData: {
@@ -95,32 +119,46 @@ export default {
   computed: {
     transTitle() {
       let weeks = this.weeks.map((time) => `${time} ${this.getWeek(time)}`);
-      return ["", ...weeks, ""];
+      return ["", ...weeks];
+    },
+    todayIndex() {
+      let weeks = ["", ...this.weeks];
+      let today = moment().format("YYYY/MM/DD");
+      return weeks.findIndex((time) => time === today);
     },
   },
   methods: {
     ...mapMutations(["setAssetTypes"]),
-    outExcel() {
-      // this.jsonData是要导出的数据内容（表格里的内容），
-      // this.listHander对应要导出内容的表头
-      // 学生：指向的是excel文件名
-      // console.table("tabledata = ", this.tableData.flat());
-      // let data3 = [];
-      // this.tableData.forEach(() => {
-      //   data3.push('')
-      // })
-      // this.tableData.forEach((data, ids) => {
-      //   console.log("data==========", data, this.types[ids]);
-      // });
+    exportExcel() {
       let subTitles = this.transTitle.map((data, index) => {
         return this.getSubTitle(index, 9);
       });
       console.log("subTitles = ", subTitles);
-      let data = this.tableData.flat();
-      data.unshift(subTitles);
-      data.unshift(this.transTitle);
-
-      xlsx(data, this.weeks, "学生");
+      // let data = this.tableData.flat();
+      let dataAll = [];
+      this.tableData.forEach((data, ids) => {
+        let d = data.map((items) =>
+          items.map((item, index) => {
+            if (index > 0) {
+              return `${item[0]} / ${item[1]}`;
+            } else {
+              return item;
+            }
+          })
+        );
+        dataAll.push(...d);
+        let line = new Array(data[0].length).fill(this.types[ids]);
+        dataAll.push(line);
+        console.log("data==========", data, this.types[ids], line);
+      });
+      dataAll.unshift(subTitles);
+      dataAll.unshift(this.transTitle);
+      var filename = this.formatDate
+        .replace(/\//g, "")
+        .replace(/\s*/g, "")
+        .replace(/至/g, "-");
+      console.log("filename = ", filename);
+      xlsx(dataAll, this.weeks, `食材${filename}`);
     },
     getFormatName(prev, next) {
       return `${prev} (${next})`;
@@ -129,6 +167,9 @@ export default {
       //注意这里是解构
       //利用单元格的 className 的回调方法，给行列索引赋值
       row.index = rowIndex;
+      if (column.index === this.todayIndex) {
+        return "is-today";
+      }
       column.index = columnIndex;
     },
     cellDblClick(row, column) {
@@ -172,12 +213,10 @@ export default {
           return "周日";
       }
     },
-    getSubTitle(index, len) {
+    getSubTitle(index) {
       let title = "入库/剩余";
       if (index === 0) {
         title = "食材名称/规格";
-      } else if (index === len - 1) {
-        title = "总量";
       } else {
         title = "入库/剩余";
       }
@@ -208,7 +247,6 @@ export default {
             ...this.weeks.map((key) => {
               return this.date[key][id];
             }),
-            columns[index][i].count,
           ];
         })
       );
@@ -224,9 +262,26 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-.shicai-container {
+<style lang="less">
+.small-title {
+  font-size: 14px;
+}
+.is-today {
+  background: rgba(136, 197, 154, 0.31);
+}
+.shicai-container-table {
   position: relative;
+  .header-sticky {
+    position: sticky;
+    top: 40px;
+    z-index: 11;
+    .el-table__body-wrapper {
+      display: none;
+    }
+  }
+  td.el-table__cell {
+    font-size: 18px;
+  }
   .export-btn {
     position: absolute;
     right: 80px;
@@ -241,6 +296,15 @@ export default {
   }
   .table-type {
     font-size: 16px;
+    position: sticky;
+    top: 136px;
+    z-index: 10;
+    height: 40px;
+    line-height: 40px;
+    color: rgba(46, 75, 72, 0.72);
+    font-weight: 700;
+    background: #9bccc8;
+    margin: 0;
   }
 
   .card-box {

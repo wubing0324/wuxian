@@ -5,6 +5,14 @@
 </template>
 
 <style lang="less">
+html,
+body {
+  margin: 0;
+  background: rgba(246, 246, 249, 1);
+}
+body {
+  font-size: 14px;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -14,6 +22,7 @@
   .daohang {
     font-size: 12px;
   }
+  margin: 0 20px 20px 20px;
 }
 
 nav {

@@ -8,6 +8,7 @@
     >
       <el-date-picker
         v-model="now"
+        size="mini"
         type="date"
         :picker-options="pickerOptions"
         placeholder="选择日期"
@@ -19,7 +20,7 @@
         size="mini"
         :model="form"
         ref="form"
-        label-width="300px"
+        label-width="160px"
         class="demo-ruleForm"
       >
         <div class="part-asset">
@@ -225,21 +226,19 @@ export default {
       display: none;
     }
     .part-asset {
-      width: 86%;
+      width: 100%;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       .el-form-item {
-        width: 200px;
-      }
-      .el-form-item__content {
-        width: 70px;
+        width: 50%;
       }
       .el-form-item__label {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-align: left;
       }
     }
   }

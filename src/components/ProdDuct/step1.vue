@@ -12,11 +12,11 @@
         <el-input type="text" v-model="form.name" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="单价" prop="price">
-        <el-input
+        <el-input-number
           type="text"
           v-model="form.price"
           autocomplete="off"
-        ></el-input>
+        ></el-input-number>
       </el-form-item>
       <el-form-item label="组成" prop="checkList">
         <el-checkbox-group
@@ -168,21 +168,29 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-.assetTypeData {
-  display: flex;
-  .type-class {
-    font-size: 16px;
-    margin-right: 10px;
-    width: 120px;
-    text-align: left;
-  }
-}
 .prod-step1 {
   .shengyu {
     color: green;
   }
   .ruku {
     color: red;
+  }
+  .el-form-item {
+    width: 100%;
+    .assetTypeData {
+      display: flex;
+      flex-wrap: wrap;
+      .type-class {
+        font-size: 14px;
+        margin-right: 10px;
+        width: 120px;
+        text-align: left;
+        font-weight: 700;
+      }
+    }
+    .el-input-number--mini {
+      width: 100%;
+    }
   }
 }
 </style>

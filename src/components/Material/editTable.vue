@@ -1,5 +1,5 @@
 <template>
-  <div class="shicai-container">
+  <div class="shicai-edit-container">
     <el-dialog
       width="50vw"
       title="修改食材"
@@ -9,6 +9,7 @@
       <el-date-picker
         v-model="now"
         type="date"
+        size="mini"
         :picker-options="pickerOptions"
         placeholder="选择日期"
         value-format="yyyy/MM/dd"
@@ -19,11 +20,11 @@
         size="mini"
         :model="form"
         ref="form"
-        label-width="160px"
+        label-width="200px"
         class="demo-ruleForm"
       >
         <div v-for="type in types" :key="type">
-          <p>{{ type }}</p>
+          <p class="type-title">{{ type }}</p>
           <div class="part-asset">
             <el-form-item
               v-for="data in getDataByType(type)"
@@ -44,7 +45,7 @@
               >
             </el-form-item>
             <el-form-item
-              v-for="i in 10"
+              v-for="i in 3"
               style="
                  {
                   height: 0;
@@ -298,65 +299,31 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-// .edit-table-class {
-//   height: 80vh;
-// }
-.shicai-container {
+.shicai-edit-container {
+  .type-title {
+    background: #9bccc8;
+    padding: 5px;
+  }
   .edit-table-class {
     .el-dialog__header {
       display: none;
     }
     .part-asset {
-      width: 86%;
+      width: 100%;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      .el-form-item__content {
-        width: 70px;
+      .el-form-item {
+        width: 50%;
       }
       .el-form-item__label {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-align: left;
       }
     }
-  }
-  .p-title {
-    font-size: 18px;
-    font-weight: 500;
-  }
-  .table-type {
-    font-size: 16px;
-  }
-
-  .card-box {
-    display: flex;
-    flex-wrap: wrap;
-    .shicai-card {
-      margin-right: 5px;
-      margin-bottom: 5px;
-    }
-  }
-  .shengyu {
-    color: green;
-  }
-  .ruku {
-    color: red;
-  }
-  .add-card {
-    width: 178px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-}
-.test {
-  color: red;
-  .re {
-    color: red;
   }
 }
 </style>

@@ -2,8 +2,27 @@
   <div class="wuliao-container">
     <div v-show="nodata">暂无数据，请先添加数据</div>
     <div class="switch-week">
+      <p class="shicai-title">食材列表</p>
+      <el-button size="mini" type="primary" @click="goProd">产品界面</el-button>
+      <el-button size="mini" type="primary" @click="addAssets"
+        >添加食材</el-button
+      >
+      <el-button size="mini" type="success" @click="editAssets"
+        >修改食材</el-button
+      >
+      <el-button size="mini" type="success" @click="addAssetType"
+        >添加食材种类</el-button
+      >
+      <el-button size="mini" type="success" @click="addRule"
+        >添加食材之间规则</el-button
+      >
+      <el-button size="mini" type="primary" @click="exportExcel"
+        >导出表格</el-button
+      >
+      <span class="label-span-picker">选择日期:</span>
       <el-date-picker
         v-model="weekData"
+        size="mini"
         type="week"
         :format="formatDate"
         placeholder="选择周"
@@ -17,6 +36,7 @@
       :originData="originData"
       :date="date"
       :weeks="weeks"
+      :formatDate="formatDate"
       ref="showtable"
     ></showTable>
     <editTable
@@ -70,11 +90,6 @@
       </el-form>
     </el-dialog>
     <AssetType ref="AssetType"></AssetType>
-    <el-button type="primary" @click="goProd">产品</el-button>
-    <el-button type="primary" @click="addAssets">添加食材</el-button>
-    <el-button type="success" @click="editAssets">修改食材</el-button>
-    <el-button type="success" @click="addAssetType">添加食材种类</el-button>
-    <el-button type="success" @click="addRule">添加食材之间规则</el-button>
   </div>
 </template>
 
@@ -135,28 +150,31 @@ export default {
       return data.length === 0;
     },
     formatDate() {
-      let val = moment(this.weekData).format("YYYY/MM/DD");
+      let val = moment(this.weekData).format("MM/DD");
       const weekOfday = moment().format("E");
-      let last_monday = moment().format("YYYY/MM/DD");
+      let last_monday = moment().format("MM/DD");
       if (val === last_monday) {
         let startTime = moment()
           .subtract(weekOfday - 1, "days")
-          .format("YYYY/MM/DD");
+          .format("MM/DD");
         let endTime = moment()
           .subtract(7 - weekOfday, "days")
-          .format("YYYY/MM/DD");
+          .format("MM/DD");
         return `${startTime} 至 ${endTime}`;
       } else {
         let startTime = moment(this.weekData)
           .subtract(1, "days")
-          .format("YYYY/MM/DD");
-        let endTime = moment(this.weekData).add(5, "days").format("YYYY/MM/DD");
+          .format("MM/DD");
+        let endTime = moment(this.weekData).add(5, "days").format("MM/DD");
         return `${startTime} 至 ${endTime}`;
       }
     },
   },
   props: {},
   methods: {
+    exportExcel() {
+      this.$refs["showtable"].exportExcel();
+    },
     changeWeek(val) {
       this.weeks = this.generateWeeks(val);
       let date = {};
@@ -318,33 +336,27 @@ export default {
   .el-select {
     width: 100%;
   }
-}
-.all-card-boxs {
-  .p-title {
-    font-size: 18px;
-    font-weight: 500;
-  }
-
-  .card-box {
-    display: flex;
-    flex-wrap: wrap;
-    .food-card {
-      margin-right: 5px;
-    }
-  }
-  .add-card {
-    width: 178px;
-    height: 120px;
+  .switch-week {
+    height: 40px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-}
-.test {
-  color: red;
-  .re {
-    color: red;
+    justify-content: end;
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    padding-right: 2px;
+    background: #3d6170;
+    font-size: 14px;
+    .shicai-title {
+      color: #fff;
+      position: absolute;
+      left: 20px;
+      font-size: 18px;
+    }
+    .label-span-picker {
+      margin: 0 10px;
+      color: #fff;
+    }
   }
 }
 </style>
