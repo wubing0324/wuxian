@@ -12,11 +12,29 @@ export function xlsx(json, fields, filename = ".xlsx") {
   //   }
   // });
   let sheetName = filename; //excel的文件名称
-  debugger;
   let wb = XLSX.utils.book_new(); //工作簿对象包含一SheetNames数组，以及一个表对象映射表名称到表对象。XLSX.utils.book_new实用函数创建一个新的工作簿对象。
   let ws = XLSX.utils.aoa_to_sheet(json); //将JS对象数组转换为工作表。
   wb.SheetNames.push(sheetName);
   wb.Sheets[sheetName] = ws;
+  ws["!cols"] = [
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+  ];
+  const merge = [
+    // 纵向合并，范围是第1列的行1到行2
+    { s: { r: 2, c: 0 }, e: { r: 4, c: 0 } },
+    // 纵向合并，范围是第2列的行1到行2
+    { s: { r: 5, c: 0 }, e: { r: 6, c: 0 } },
+    { s: { r: 7, c: 0 }, e: { r: 26, c: 0 } },
+  ];
+  ws["!merges"] = merge;
   const defaultCellStyle = {
     font: { name: "Verdana", sz: 20, color: "FF00FF88" },
     fill: { fgColor: { rgb: "FFFFAA00" } },

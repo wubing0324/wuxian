@@ -119,10 +119,10 @@ export default {
   computed: {
     transTitle() {
       let weeks = this.weeks.map((time) => `${time} ${this.getWeek(time)}`);
-      return ["", ...weeks];
+      return ["", "", ...weeks];
     },
     todayIndex() {
-      let weeks = ["", ...this.weeks];
+      let weeks = ["", "", ...this.weeks];
       let today = moment().format("YYYY/MM/DD");
       return weeks.findIndex((time) => time === today);
     },
@@ -216,6 +216,8 @@ export default {
     getSubTitle(index) {
       let title = "入库/剩余";
       if (index === 0) {
+        title = "食材种类";
+      } else if (index === 1) {
         title = "食材名称/规格";
       } else {
         title = "入库/剩余";
@@ -242,7 +244,9 @@ export default {
       this.tableData = matrixData.map((data, index) =>
         data.map((col, i) => {
           let id = columns[index][i].id;
+          let type = columns[index][i].type;
           return [
+            type,
             this.getFormatName(columns[index][i].name, columns[index][i].unit),
             ...this.weeks.map((key) => {
               return this.date[key][id];
