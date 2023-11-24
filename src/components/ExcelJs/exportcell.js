@@ -1,7 +1,7 @@
 import fs from "file-saver";
 import XLSX from "xlsx";
 
-export function xlsx(json, fields, filename = ".xlsx") {
+export function xlsx(json, positions, filename = ".xlsx") {
   //导出xlsx
   // json.forEach((item) => {
   //   for (let index in item) {
@@ -27,14 +27,18 @@ export function xlsx(json, fields, filename = ".xlsx") {
     { wch: 25 },
     { wch: 25 },
   ];
-  const merge = [
-    // 纵向合并，范围是第1列的行1到行2
-    { s: { r: 2, c: 0 }, e: { r: 4, c: 0 } },
-    // 纵向合并，范围是第2列的行1到行2
-    { s: { r: 5, c: 0 }, e: { r: 6, c: 0 } },
-    { s: { r: 7, c: 0 }, e: { r: 26, c: 0 } },
-  ];
-  ws["!merges"] = merge;
+  const merge = positions.map((pos) => {
+    return { s: { r: pos[0], c: 0 }, e: { r: pos[1], c: 0 } };
+  });
+  // const merge = [
+  //   // 纵向合并，范围是第1列的行1到行2
+  //   { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } },
+  //   // 纵向合并，范围是第2列的行1到行2
+  //   { s: { r: 5, c: 0 }, e: { r: 24, c: 0 } },
+  // ];
+  if (merge.length > 0) {
+    ws["!merges"] = merge;
+  }
   const defaultCellStyle = {
     font: { name: "Verdana", sz: 20, color: "FF00FF88" },
     fill: { fgColor: { rgb: "FFFFAA00" } },

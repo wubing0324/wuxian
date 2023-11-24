@@ -125,9 +125,13 @@ export default {
     this.productsOriginData = this.currentData.productsOriginData;
     this.productsDate = this.currentData.productsDate;
     this.originData2 = this.currentData.originData;
+    this.recipes = this.currentData.recipes;
     this.originData2.forEach((asset) => {
       this.assetMap[asset.id] = asset.name;
     });
+    if (this.dialogType !== "add" && this.recipes[this.formInfo.id]) {
+      this.form = this.recipes[this.formInfo.id];
+    }
   },
 };
 </script>

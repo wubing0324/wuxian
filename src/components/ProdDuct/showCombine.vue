@@ -1,11 +1,10 @@
 <template>
-  <div class="shicai-container">
+  <div class="combine-container">
     <el-dialog
       title="食材构成"
       :visible.sync="dialogVisible"
       custom-class="edit-table-class"
     >
-      {{ checkList }}
       <el-form
         size="mini"
         :model="form"
@@ -14,20 +13,16 @@
         class="demo-ruleForm"
       >
         <el-form-item
-          :label="assetMap[check + '']"
-          :key="check"
-          :prop="check + ''"
-          :rules="[{ required: true, message: '数量不能为空' }]"
-          v-for="check in checkList"
+          :label="assetMap[id + '']"
+          :key="id"
+          v-for="(check, id) in form"
         >
           <el-input
             type="text"
-            v-model="form[check + '']"
+            v-model="form[id]"
             autocomplete="off"
+            readonly
           ></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="resetForm('form')">取消</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -38,7 +33,7 @@
 // import moment from "moment";
 
 export default {
-  name: "EditTable",
+  name: "ShowCombine",
   components: {},
   data() {
     return {
@@ -63,12 +58,12 @@ export default {
   },
   methods: {
     showDialog(row) {
-      console.log("row = ", row);
       this.dialogVisible = true;
       this.currentData = this.getCurrentData();
       this.recipes = this.currentData.recipes;
       this.productsOriginData = this.currentData.productsOriginData;
       let result = this.productsOriginData.find((data) => data.name === row[0]);
+      this.form = this.recipes[result.id];
       this.$set(this, "checkList", result.checkList);
     },
     handleClose() {
@@ -76,6 +71,7 @@ export default {
     },
     resetForm() {
       this.$emit("handleClose");
+      this.dialogVisible = false;
     },
     getCurrentData() {
       let key = this.$route.params.id;
@@ -99,12 +95,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-.shicai-container {
-  .edit-table-class {
-    .el-dialog__header {
-      // display: none;
-    }
-  }
+.combine-container {
   .el-step {
     text-align: left;
   }

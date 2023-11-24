@@ -32,6 +32,7 @@
       :date="productsDate"
       :originData="productsOriginData"
       @cellDblClick="cellDblClick"
+      @handleEdit="handleEdit"
       :weeks="weeks"
       :formatDate="formatDate"
       @combine="combine"
@@ -150,12 +151,13 @@ export default {
       let val = moment(this.weekData).format("MM/DD");
       const weekOfday = moment().format("E");
       let last_monday = moment().format("MM/DD");
+      debugger;
       if (val === last_monday) {
         let startTime = moment()
           .subtract(weekOfday - 1, "days")
           .format("MM/DD");
         let endTime = moment()
-          .subtract(7 - weekOfday, "days")
+          .add(7 - weekOfday, "days")
           .format("MM/DD");
         return `${startTime} 至 ${endTime}`;
       } else {
@@ -288,12 +290,13 @@ export default {
           price: Number(row[1]),
           id: selectedData.id,
         });
-      } else {
-        this.$refs.editTable.showDialog({
-          form: { ...selectedData },
-          dialogType: "edit",
-        });
       }
+    },
+    handleEdit({ selectedData }) {
+      this.$refs.editTable.showDialog({
+        form: { ...selectedData },
+        dialogType: "edit",
+      });
     },
     editAssets() {
       this.$refs.editTableAll.showDialog();
@@ -453,7 +456,7 @@ export default {
     justify-content: end;
     position: sticky;
     top: 0;
-    z-index: 10000;
+    z-index: 100;
     padding-right: 2px;
     background: #3d6170;
     font-size: 14px;

@@ -50,7 +50,10 @@
       <el-table-column fixed="right" label="操作" width="100">
         <template slot-scope="scope">
           <el-button @click="handleClick(scope.row)" type="text" size="small"
-            >查看食材</el-button
+            >查看</el-button
+          >
+          <el-button @click="handleEdit(scope.row)" type="text" size="small"
+            >编辑</el-button
           >
         </template>
       </el-table-column>
@@ -117,7 +120,7 @@ export default {
       return ["", "", ...weeks];
     },
     todayIndex() {
-      let weeks = ["", ...this.weeks];
+      let weeks = ["", "", ...this.weeks];
       let today = moment().format("YYYY/MM/DD");
       return weeks.findIndex((time) => time === today);
     },
@@ -130,8 +133,6 @@ export default {
       let subTitles = this.transTitle.map((data, index) => {
         return this.getSubTitle(index);
       });
-      console.log("subTitles = ", subTitles);
-      // let data = this.tableData.flat();
       let dataAll = this.tableData.map((data) =>
         data.map((item, index) => {
           if (index > 1) {
@@ -147,8 +148,7 @@ export default {
         .replace(/\//g, "")
         .replace(/\s*/g, "")
         .replace(/至/g, "-");
-      console.log("filename = ", filename);
-      xlsx(dataAll, this.weeks, `产品${filename}`);
+      xlsx(dataAll, [], `产品${filename}`);
     },
     getWeek(date) {
       // 参数时间戳
@@ -182,6 +182,14 @@ export default {
         return "is-today";
       }
     },
+    handleEdit(row) {
+      let selectedData = this.originData.find((data) => data.name === row[0]);
+      this.$emit("handleEdit", {
+        selectedData,
+        row,
+        weeks: this.weeks,
+      });
+    },
     cellDblClick(row, column) {
       let selectedData = this.originData.find((data) => data.name === row[0]);
       this.$emit("cellDblClick", {
@@ -191,13 +199,7 @@ export default {
         weeks: this.weeks,
       });
     },
-    rowDbClick(row) {
-      // @row-dblclick="rowDbClick"
-      let selectedData = this.originData.find(
-        (data) => this.getFormatName(data.name, data.unit) === row[0]
-      );
-      console.log("selectedData = ", selectedData);
-    },
+    rowDbClick() {},
     isArray(arr) {
       return Object.prototype.toString.call(arr) === "[object Array]";
     },
@@ -244,6 +246,17 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 .prod-container-table {
+  .is-today {
+    background: rgba(136, 197, 154, 0.31);
+    position: relative;
+    &::after {
+      position: absolute;
+      content: "今天";
+      bottom: 0;
+      right: 0;
+      font-size: 12px;
+    }
+  }
   .header-sticky {
     position: sticky;
     top: 40px;

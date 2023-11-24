@@ -1,5 +1,5 @@
 <template>
-  <div class="shicai-container">
+  <div class="prod-edit-table-cell">
     <el-dialog
       :title="title"
       :visible.sync="dialogVisible"
@@ -24,7 +24,7 @@
         </el-form-item>
         <el-form-item label="总价" prop="allPrice">
           <el-input
-            readonly=""
+            readonly
             type="number"
             v-model.number="form.allPrice"
             autocomplete="off"
@@ -147,7 +147,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-.shicai-container {
+.prod-edit-table-cell {
+  .el-input-number {
+    width: 100%;
+  }
   .p-title {
     font-size: 18px;
     font-weight: 500;
@@ -156,32 +159,10 @@ export default {
     font-size: 16px;
   }
 
-  .card-box {
-    display: flex;
-    flex-wrap: wrap;
-    .shicai-card {
-      margin-right: 5px;
-      margin-bottom: 5px;
-    }
-  }
   .shengyu {
     color: green;
   }
   .ruku {
-    color: red;
-  }
-  .add-card {
-    width: 178px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-}
-.test {
-  color: red;
-  .re {
     color: red;
   }
 }

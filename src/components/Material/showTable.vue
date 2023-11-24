@@ -73,6 +73,8 @@ export default {
       types: [],
       columns: [],
       tableData: [],
+      positions: [],
+      moveIndex: 2,
       // originData: [{ name: "gfd123", type: "解冻", unit: "ml", count: 0 }],
     };
   },
@@ -119,10 +121,10 @@ export default {
   computed: {
     transTitle() {
       let weeks = this.weeks.map((time) => `${time} ${this.getWeek(time)}`);
-      return ["", "", ...weeks];
+      return ["", ...weeks];
     },
     todayIndex() {
-      let weeks = ["", "", ...this.weeks];
+      let weeks = ["", ...this.weeks];
       let today = moment().format("YYYY/MM/DD");
       return weeks.findIndex((time) => time === today);
     },
@@ -133,13 +135,11 @@ export default {
       let subTitles = this.transTitle.map((data, index) => {
         return this.getSubTitle(index, 9);
       });
-      console.log("subTitles = ", subTitles);
-      // let data = this.tableData.flat();
       let dataAll = [];
-      this.tableData.forEach((data, ids) => {
+      this.tableDataExCel.forEach((data) => {
         let d = data.map((items) =>
           items.map((item, index) => {
-            if (index > 0) {
+            if (index > 1) {
               return `${item[0]} / ${item[1]}`;
             } else {
               return item;
@@ -147,18 +147,14 @@ export default {
           })
         );
         dataAll.push(...d);
-        let line = new Array(data[0].length).fill(this.types[ids]);
-        dataAll.push(line);
-        console.log("data==========", data, this.types[ids], line);
       });
-      dataAll.unshift(subTitles);
-      dataAll.unshift(this.transTitle);
+      dataAll.unshift(["类型", ...subTitles]);
+      dataAll.unshift(["", ...this.transTitle]);
       var filename = this.formatDate
         .replace(/\//g, "")
         .replace(/\s*/g, "")
         .replace(/至/g, "-");
-      console.log("filename = ", filename);
-      xlsx(dataAll, this.weeks, `食材${filename}`);
+      xlsx(dataAll, this.positions, `食材${filename}`);
     },
     getFormatName(prev, next) {
       return `${prev} (${next})`;
@@ -183,13 +179,7 @@ export default {
         weeks: this.weeks,
       });
     },
-    rowDbClick(row) {
-      // @row-dblclick="rowDbClick"
-      let selectedData = this.originData.find(
-        (data) => this.getFormatName(data.name, data.unit) === row[0]
-      );
-      console.log("selectedData = ", selectedData);
-    },
+    rowDbClick() {},
     isArray(arr) {
       return Object.prototype.toString.call(arr) === "[object Array]";
     },
@@ -216,8 +206,6 @@ export default {
     getSubTitle(index) {
       let title = "入库/剩余";
       if (index === 0) {
-        title = "食材种类";
-      } else if (index === 1) {
         title = "食材名称/规格";
       } else {
         title = "入库/剩余";
@@ -241,7 +229,29 @@ export default {
           return arr;
         })
       );
+      this.caculateSpan(columns);
+      let positions = [];
+      let cur = 0;
+      columns.forEach((arr) => {
+        positions.push([
+          cur + this.moveIndex,
+          cur + arr.length - 1 + this.moveIndex,
+        ]);
+        cur = cur + arr.length;
+      });
+      this.positions = positions.filter((pos) => pos[0] !== pos[1]);
       this.tableData = matrixData.map((data, index) =>
+        data.map((col, i) => {
+          let id = columns[index][i].id;
+          return [
+            this.getFormatName(columns[index][i].name, columns[index][i].unit),
+            ...this.weeks.map((key) => {
+              return this.date[key][id];
+            }),
+          ];
+        })
+      );
+      this.tableDataExCel = matrixData.map((data, index) =>
         data.map((col, i) => {
           let id = columns[index][i].id;
           let type = columns[index][i].type;
@@ -254,6 +264,25 @@ export default {
           ];
         })
       );
+    },
+    /**
+     * @name wubing
+     * @Date 2023-11-22 16:48:12
+     * @description 根据类型计算需要合并的单元格索引
+     * @param {参数类型} 参数 参数说明
+     * @return {返回类型说明} 索引数组
+     */
+    caculateSpan(columns) {
+      let positions = [];
+      let cur = 0;
+      columns.forEach((arr) => {
+        positions.push([
+          cur + this.moveIndex,
+          cur + arr.length - 1 + this.moveIndex,
+        ]);
+        cur = cur + arr.length;
+      });
+      this.positions = positions.filter((pos) => pos[0] !== pos[1]);
     },
   },
   mounted() {},
@@ -272,6 +301,14 @@ export default {
 }
 .is-today {
   background: rgba(136, 197, 154, 0.31);
+  position: relative;
+  &::after {
+    position: absolute;
+    content: "今天";
+    bottom: 0;
+    right: 0;
+    font-size: 12px;
+  }
 }
 .shicai-container-table {
   position: relative;

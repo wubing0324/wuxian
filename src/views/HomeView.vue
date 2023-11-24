@@ -50,19 +50,19 @@ export default {
     },
   },
   created() {
-    let arr = ["coffee", "branch", "cake"];
-    let storeName = [
-      "assetRules",
-      "assetTypeData",
-      "date",
-      "originData",
-      "productsDate",
-      "productsOriginData",
-      "recipes",
-    ];
-    arr.forEach((name) => {
-      this.openDb(name, storeName);
-    });
+    // let arr = ["coffee", "branch", "cake"];
+    // let storeName = [
+    //   "assetRules",
+    //   "assetTypeData",
+    //   "date",
+    //   "originData",
+    //   "productsDate",
+    //   "productsOriginData",
+    //   "recipes",
+    // ];
+    // arr.forEach((name) => {
+    //   this.openDb(name, storeName);
+    // });
   },
 };
 </script>

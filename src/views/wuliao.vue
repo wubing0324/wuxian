@@ -158,7 +158,7 @@ export default {
           .subtract(weekOfday - 1, "days")
           .format("MM/DD");
         let endTime = moment()
-          .subtract(7 - weekOfday, "days")
+          .add(7 - weekOfday, "days")
           .format("MM/DD");
         return `${startTime} 至 ${endTime}`;
       } else {
@@ -343,7 +343,7 @@ export default {
     justify-content: end;
     position: sticky;
     top: 0;
-    z-index: 10000;
+    z-index: 100;
     padding-right: 2px;
     background: #3d6170;
     font-size: 14px;
