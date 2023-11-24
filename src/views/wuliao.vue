@@ -256,16 +256,18 @@ export default {
             });
             return;
           } else {
-            this.originData.push({
+            let newData = {
               name: this.form.name.replace(/\s*/g, ""),
               type: this.form.type,
               unit: this.form.unit,
               count: 0,
               id: id,
-            });
+            };
+            this.originData.push(newData);
             this.updateDate2(this.date);
-            // this.generateColumns();
             let key = this.$route.params.id;
+            this.setLocalData2(key, "originData", newData);
+            // this.generateColumns();
             this.currentData.originData = this.originData;
             this.setLocalData(key, "originData", this.originData);
             this.$message({
@@ -320,6 +322,17 @@ export default {
     },
   },
   created() {
+    let key = this.$route.params.id;
+    let storeName = [
+      "assetRules",
+      "assetTypeData",
+      "date",
+      "originData",
+      "productsDate",
+      "productsOriginData",
+      "recipes",
+    ];
+    this.openDb(key, storeName);
     this.currentData = this.getCurrentData();
     this.originData = this.currentData.originData;
     this.assetTypeData = this.currentData.assetTypeData;

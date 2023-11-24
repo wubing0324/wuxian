@@ -5,7 +5,7 @@ import store from "./store";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 import "./utils/rem.js";
-import { openDb, setItem, getItem } from "./db";
+import { openDb, setItem, getItem, getStore } from "./db";
 Vue.use(ElementUI);
 Vue.config.productionTip = false;
 
@@ -36,12 +36,28 @@ function setLocalData(key, subKey, data) {
   currentData[subKey] = data;
   localStorage.setItem(key, JSON.stringify(currentData));
 }
+function setLocalData2(key, subKey, data) {
+  var request = window.db
+    .transaction([subKey], "readwrite")
+    .objectStore(subKey)
+    .put(data);
+
+  request.onsuccess = function () {
+    console.log("数据写入成功");
+  };
+
+  request.onerror = function () {
+    console.log("数据写入失败");
+  };
+}
 Vue.prototype.getLocalData = getLocalData;
 Vue.prototype.setLocalData = setLocalData;
+Vue.prototype.setLocalData2 = setLocalData2;
 
 Vue.prototype.openDb = openDb;
 Vue.prototype.setItem = setItem;
 Vue.prototype.getItem = getItem;
+Vue.prototype.getStore = getStore;
 new Vue({
   router,
   store,

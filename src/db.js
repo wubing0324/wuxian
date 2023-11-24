@@ -16,12 +16,12 @@ const promisify = (request) => {
   });
 };
 const dbPromise = resolvablePromise();
-const dbPromiseMap = {};
 export const openDb = function (dbName, storeName = []) {
   // 1.新建或者打开数据库
   const request = window.indexedDB.open(dbName);
   request.onupgradeneeded = () => {
     const db = request.result;
+    window.db = db;
     // 2.创建对象仓库，即新建表
     storeName.forEach((name) => {
       if (!db.objectStoreNames.contains(name)) {
@@ -30,7 +30,6 @@ export const openDb = function (dbName, storeName = []) {
         });
       }
     });
-    dbPromiseMap[dbName] = dbPromise.resolve(db);
   };
   request.onsuccess = (event) => {
     var db = event.target.result;
@@ -40,9 +39,10 @@ export const openDb = function (dbName, storeName = []) {
   };
 };
 
-const getStore = async (tableName, storeName, operationMode) => {
-  const db = await dbPromiseMap[tableName];
-  const store = db.transaction(storeName, operationMode).objectStore(storeName);
+export const getStore = async (tableName, storeName, operationMode) => {
+  const store = window.db
+    .transaction(storeName, operationMode)
+    .objectStore(storeName);
   return store;
 };
 
